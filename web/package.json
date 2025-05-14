@@ -1,0 +1,37 @@
+{
+  "name": "test",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "start": "vite dev"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fontsource/roboto": "^5.2.5",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/lab": "^7.0.0-beta.11",
+    "@mui/material": "^7.0.2",
+    "@mui/styled-engine-sc": "^7.0.2",
+    "@react-router/node": "^7.5.3",
+    "@react-router/serve": "^7.5.3",
+    "@vitejs/plugin-react": "^4.4.1",
+    "isbot": "^5.1.27",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router": "^7.5.3",
+    "styled-components": "^6.1.17"
+  },
+  "devDependencies": {
+    "@react-router/dev": "^7.5.3",
+    "@tailwindcss/vite": "^4.1.4",
+    "@types/node": "^20",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "tailwindcss": "^4.1.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.3",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}
