@@ -8,12 +8,14 @@ import (
 	"os"
 	"path/filepath"
 	"svoyak/internal/models"
+
+	"github.com/google/uuid"
 )
 
 func UnpackZipArchive(filename string) error {
 	archivePath := "./temp/" + filename + ".siq"
 	if archive, err := zip.OpenReader(archivePath); err == nil {
-		defer archive.Close() // Перенесем defer в начало
+		defer archive.Close()
 		defer os.Remove(archivePath)
 		basePath := "./temp/pkg/" + filename
 
@@ -107,6 +109,6 @@ func Parse(data []byte) (*models.Package, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	pkg.PackageID = uuid.New().String()
 	return &pkg, nil
 }

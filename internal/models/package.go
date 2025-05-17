@@ -1,6 +1,7 @@
 package models
 
 type Package struct {
+	PackageID  string
 	Name       string   `xml:"name,attr"`
 	Version    int      `xml:"version,attr"`
 	ID         string   `xml:"id,attr"`

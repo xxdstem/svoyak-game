@@ -42,7 +42,7 @@ export const router = createBrowserRouter([{
   ], {basename: import.meta.env.BASE_URL});
 
 
-export function Layout() {
+export function Layout(props:any) {
 
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -51,6 +51,7 @@ export function Layout() {
             <PageWrapper className="page-wrapper">
               <Header toggleMobileSidebar={()=>setMobileSidebarOpen(true)}/>
                   <Box sx={{ minHeight: "calc(100vh - 170px)" }}>
+                    {props.children ?? null}
                     <Outlet/>
                   </Box>
               

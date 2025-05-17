@@ -28,7 +28,6 @@ func New(l *logger.Logger) *apiHandler {
 		Path:     "/",
 		MaxAge:   86400 * 30, // 30 дней
 		HttpOnly: true,
-		Secure:   false, // Для HTTPS
 		SameSite: http.SameSiteLaxMode,
 	}
 	return &apiHandler{}
@@ -36,14 +35,6 @@ func New(l *logger.Logger) *apiHandler {
 
 func (h *apiHandler) Handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-
-		if r.Method == "OPTIONS" {
-			return
-		}
 		session, err := sessionStore.Get(r, "session")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

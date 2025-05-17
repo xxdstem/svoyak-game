@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"net/http"
+	"svoyak/internal/entity"
 	"svoyak/internal/models"
 	"svoyak/pkg/logger"
 	"svoyak/pkg/parser"
@@ -9,8 +11,8 @@ import (
 var log *logger.Logger
 
 type Store interface {
-	Get(index string) any
-	Set(index string, value any)
+	Get(index string) (*entity.User, bool)
+	Set(index string, value *entity.User)
 }
 
 type uc struct {
@@ -22,17 +24,33 @@ func New(l *logger.Logger, store Store) *uc {
 	return &uc{store: store}
 }
 
-func (uc *uc) UnpackAndLoadPackage(filename string) *models.Package {
-	err := parser.UnpackZipArchive(filename)
+func (uc *uc) UnpackAndLoadPackage(user *entity.User) *models.Package {
+	err := parser.UnpackZipArchive(user.SessionID)
 	if err != nil {
 		log.Error("error unpack")
 		log.Fatal(err)
 	}
 
-	pkg, err := parser.ParseFromFile("./temp/pkg/" + filename + "/" + "content.xml")
+	pkg, err := parser.ParseFromFile("./temp/pkg/" + user.SessionID + "/" + "content.xml")
 	if err != nil {
 		log.Fatal(err)
 	}
-	uc.store.Set(filename, pkg)
+	user.CurrentPackage = pkg
+	user.CurrentPackageId = pkg.PackageID
 	return pkg
+}
+
+func (uc *uc) GetUser(r *http.Request) *entity.User {
+	sessionID := r.Context().Value("sessionID").(string)
+	user, ok := uc.store.Get(sessionID)
+	if !ok {
+		return nil
+	}
+	return user
+}
+
+func (uc *uc) NewUser(sessionID string, name string) *entity.User {
+	user := &entity.User{SessionID: sessionID, UserName: name}
+	uc.store.Set(sessionID, user)
+	return user
 }
