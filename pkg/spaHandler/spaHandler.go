@@ -6,16 +6,9 @@ import (
 	"path/filepath"
 )
 
-func GetHandler(static string) *spaHandler {
-	return &spaHandler{staticPath: static}
-}
+var staticPath = "web/dist"
 
-// SPA handler implements http.Handler interface
-type spaHandler struct {
-	staticPath string
-}
-
-func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func Handle(w http.ResponseWriter, r *http.Request) {
 	// Get the absolute path to prevent directory traversal
 	path, err := filepath.Abs(r.URL.Path)
 	if err != nil {
@@ -25,13 +18,13 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Prepend the path with the path to the static directory
-	path = filepath.Join(h.staticPath, path)
+	path = filepath.Join(staticPath, path)
 
 	// Check whether a file exists at the given path
 	_, err = os.Stat(path)
 	if os.IsNotExist(err) {
 		// File does not exist, serve index.html
-		http.ServeFile(w, r, filepath.Join(h.staticPath, "index.html"))
+		http.ServeFile(w, r, filepath.Join(staticPath, "index.html"))
 		return
 	} else if err != nil {
 		// If we got an error (that wasn't that the file doesn't exist) stating the
@@ -41,5 +34,5 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Otherwise, use http.FileServer to serve the static dir
-	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
+	http.FileServer(http.Dir(staticPath)).ServeHTTP(w, r)
 }

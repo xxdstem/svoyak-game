@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Game } from "~/components/SVOGame/SVoGame";
-import type { GameData } from "~/components/SVOGame/types";
+import type { GameData, Package } from "~/components/SVOGame/types";
 import http from "~/utils/axios";
 
 const App = ()=>{
   const navigate = useNavigate();
 
-  const [gameData, setGameData] = useState<GameData>();
+  const [gameData, setGameData] = useState<Package>();
 
   useEffect(()=>{
-    http.get("/round/0").then((r)=>{
-      var resp : GameData = r.data;
+    http.get("/getGameData").then((r)=>{
+      var resp : Package = r.data;
       setGameData(resp);
     }).catch((err)=>{
       if(err.response.status == 404){
@@ -22,7 +22,7 @@ const App = ()=>{
   if (!gameData){
     return <> Loading . . .</>
   }
-  return <Game data={gameData}/>
+  return <Game package={gameData}/>
 }
 
 export default App;

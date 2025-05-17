@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Grid,
@@ -18,11 +18,18 @@ import {
   GridLegacy
 } from '@mui/material';
 
-import type { GameData, Host, Player, Question, Theme } from './types';
+import type { GameData, Host, Package, Player, Question, Theme } from './types';
 
 export const Game: React.FC = (props: any) => {
     const theme = useTheme();
-    const gameData: GameData = props.data;
+
+    const pkg: Package = props.package;
+    console.log(pkg)
+    console.log(pkg.PackageID); 
+    const rounds: GameData[] = pkg.Rounds;
+
+    const [currentRound, setCurrentRound] = useState(0);
+    const gameData = useMemo<GameData>(()=>rounds[currentRound], [rounds, currentRound]);
     const [players, setPlayers] = useState <Player[]> ([{
             id: 1,
             name: 'Игрок 1',
@@ -44,13 +51,13 @@ export const Game: React.FC = (props: any) => {
         avatar: 'H',
     });
 
-    const [themes, setThemes] = useState <Theme[]>(gameData.Themes.map(theme => ({
+    const [themes, setThemes] = useState(()=>gameData.Themes.map(theme => ({
         ...theme,
         Questions: theme.Questions.map(question => ({
             ...question,
             isAnswered: false
         }))
-    })));
+    })))
 
     const [currentQuestion, setCurrentQuestion] = useState < {
         themeIndex: number,
@@ -62,8 +69,8 @@ export const Game: React.FC = (props: any) => {
 
     // Цвета для новых игроков
     const playerColors = [
-        theme.palette.success.main,
-        theme.palette.info.main,
+        "#2cf",
+        "#f6a",
         theme.palette.warning.main,
         theme.palette.error.main
     ];
@@ -155,9 +162,7 @@ export const Game: React.FC = (props: any) => {
         return questionParams.Items.find(item => ['image', 'audio'].includes(item.Type));
     };
 
-    useEffect(() => {
-        ;
-    })
+    
 
   return (
     <Box sx={{ 
@@ -195,7 +200,7 @@ export const Game: React.FC = (props: any) => {
             <Typography variant="subtitle1" gutterBottom>
               Управление игрой
             </Typography>
-            <Button 
+            {/* <Button 
               variant="contained" 
               color="primary" 
               onClick={() => setOpenAddPlayer(true)}
@@ -203,29 +208,43 @@ export const Game: React.FC = (props: any) => {
               sx={{ marginBottom: 2 }}
             >
               Добавить игрока
-            </Button>
+            </Button> */}
           </Paper>
         </GridLegacy>
         
         {/* Центральная колонка с вопросами */}
-        <GridLegacy item xs={8}>
+        <GridLegacy item xs={8} sx={{ flexGrow: 1 }}>
           <Box sx={{ 
             height: '100%', 
             display: 'flex',
+            width: "100%",
             flexDirection: 'column',
           }}>
             <Typography variant="h4" align="center" gutterBottom sx={{ marginBottom: 3 }}>
               {gameData?.Name}
             </Typography>
             
-            {/* Сетка категорий и вопросов */}
-            <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+            {/* Общий контейнер для всех тем с вопросами */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {themes.map((gameTheme, themeIndex) => (
-                <GridLegacy item xs={12 / themes.length} key={themeIndex}>
+                <Box 
+                  key={themeIndex}
+                  sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'row', 
+                    alignItems: 'flex-start',
+                    gap: 1,
+                  }}
+                >
+                  {/* Карточка с названием темы */}
                   <Card sx={{ 
                     backgroundColor: theme.palette.primary.light,
                     color: theme.palette.text.primary,
-                    marginBottom: 2,
+                    minWidth: 200, // Фиксированная ширина для темы
+                    height: 80, // Такая же высота, как у вопросов
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}>
                     <CardContent>
                       <Typography variant="h6" align="center">
@@ -234,45 +253,45 @@ export const Game: React.FC = (props: any) => {
                     </CardContent>
                   </Card>
                   
-                  {gameTheme.Questions
-                    .sort((a, b) => a.Price - b.Price)
-                    .map((question, questionIndex) => (
-                      <Card 
-                        key={questionIndex}
-                        onClick={() => handleQuestionClick(themeIndex, questionIndex)}
-                        sx={{ 
-                          marginBottom: 1,
-                          cursor: question.isAnswered ? 'default' : 'pointer',
-                          backgroundColor: question.isAnswered 
-                            ? theme.palette.grey[600] 
-                            : theme.palette.primary.dark,
-                          color: theme.palette.text.primary,
-                          height: 80,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          '&:hover': {
+                  {/* Вопросы в строку */}
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    {gameTheme.Questions
+                      .sort((a, b) => a.Price - b.Price)
+                      .map((question, questionIndex) => (
+                        <Card 
+                          key={questionIndex}
+                          onClick={() => handleQuestionClick(themeIndex, questionIndex)}
+                          sx={{ 
+                            cursor: question.isAnswered ? 'default' : 'pointer',
                             backgroundColor: question.isAnswered 
                               ? theme.palette.grey[600] 
-                              : theme.palette.primary.main,
-                          },
-                        }}
-                      >
-                        <CardContent>
-                          <Typography variant="h5" align="center">
-                            {question.isAnswered ? '' : question.Price}
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    ))}
-                </GridLegacy>
+                              : theme.palette.primary.dark,
+                            color: theme.palette.text.primary,
+                            height: 80,
+                            width: 100, // Фиксированная ширина вопросов
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            '&:hover': {
+                              backgroundColor: question.isAnswered 
+                                ? theme.palette.grey[600] 
+                                : theme.palette.primary.main,
+                            },
+                          }}
+                        >
+                          <CardContent>
+                            <Typography variant="h5" align="center">
+                              {question.isAnswered ? '' : question.Price}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </Box>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           </Box>
         </GridLegacy>
-        
-        {/* Пустая колонка для баланса */}
-        <GridLegacy item xs={2} />
       </Grid>
       
       {/* Панель игроков внизу */}
@@ -358,7 +377,7 @@ export const Game: React.FC = (props: any) => {
                   {media?.Type === 'image' && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: 2 }}>
                       <img 
-                        src={media.Content} 
+                        src={`http://localhost:8080/files/${pkg.PackageID}/Images/${media.Content}`}
                         alt="Question media" 
                         style={{ maxWidth: '100%', maxHeight: '300px' }} 
                       />
@@ -367,8 +386,8 @@ export const Game: React.FC = (props: any) => {
                   
                   {media?.Type === 'audio' && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: 2 }}>
-                      <audio controls>
-                        <source src={media.Content} type="audio/mpeg" />
+                      <audio controls autoPlay>
+                        <source src={`http://localhost:8080/files/${pkg.PackageID}/Audio/${media.Content}`} type="audio/mpeg" />
                         Ваш браузер не поддерживает аудио элемент.
                       </audio>
                     </Box>
@@ -409,7 +428,7 @@ export const Game: React.FC = (props: any) => {
                     )}
                   </Box>
                   
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  {/* <Box sx={{ display: 'flex', gap: 1 }}>
                     {players.map(player => (
                       <Button
                         key={player.id}
@@ -427,7 +446,7 @@ export const Game: React.FC = (props: any) => {
                         {player.name} (+{question.Price})
                       </Button>
                     ))}
-                  </Box>
+                  </Box> */}
                 </DialogActions>
               </>
             );

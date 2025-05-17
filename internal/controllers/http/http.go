@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 	"svoyak/internal/entity"
 	"svoyak/internal/models"
 	"svoyak/pkg/logger"
@@ -38,7 +37,7 @@ func (h *handler) Register(router *mux.Router) {
 	router.HandleFunc("/identify", h.GetIdentify).Methods("GET")
 	router.HandleFunc("/identify", h.SetIdentify).Methods("PUT")
 	router.HandleFunc("/package/upload", h.Upload).Methods("POST")
-	router.HandleFunc("/round/{round}", h.Get)
+	router.HandleFunc("/getGameData", h.Get)
 }
 
 func (h *handler) GetIdentify(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +53,7 @@ func (h *handler) GetIdentify(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) SetIdentify(w http.ResponseWriter, r *http.Request) {
-	log.Info("req...", r.FormValue("name"))
+
 	sessionID := r.Context().Value("sessionID").(string)
 	user := h.uc.NewUser(sessionID, r.FormValue("name"))
 	j, _ := json.Marshal(user)
@@ -67,14 +66,12 @@ func (h *handler) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Non authorized", http.StatusUnauthorized)
 		return
 	}
-	round := mux.Vars(r)["round"]
-	i, _ := strconv.Atoi(round)
 
 	if user.CurrentPackage == nil {
 		http.Error(w, "Game cannot be found", http.StatusNotFound)
 		return
 	}
-	json, err := json.Marshal(user.CurrentPackage.Rounds[i])
+	json, err := json.Marshal(user.CurrentPackage)
 	if err == nil {
 		w.Write(json)
 	}

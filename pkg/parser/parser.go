@@ -3,7 +3,6 @@ package parser
 import (
 	"archive/zip"
 	"encoding/xml"
-	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -12,16 +11,17 @@ import (
 	"github.com/google/uuid"
 )
 
-func UnpackZipArchive(filename string) error {
+func UnpackZipArchive(filename string) (string, error) {
 	archivePath := "./temp/" + filename + ".siq"
+	uuid := uuid.New().String()
 	if archive, err := zip.OpenReader(archivePath); err == nil {
 		defer archive.Close()
 		defer os.Remove(archivePath)
-		basePath := "./temp/pkg/" + filename
+		basePath := "./temp/pkg/" + uuid
 
 		// Создаем корневую директорию
 		if err := os.MkdirAll(basePath, 0755); err != nil {
-			return err
+			return "", err
 		}
 
 		for _, f := range archive.File {
@@ -30,63 +30,44 @@ func UnpackZipArchive(filename string) error {
 			if f.FileInfo().IsDir() {
 				// Создаем директорию
 				if err := os.MkdirAll(filePath, 0755); err != nil {
-					return err
+					return "", err
 				}
 			} else {
 				// Создаем родительские директории для файла
 				if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
-					return err
+					return "", err
 				}
 
 				// Открываем файл в архиве
 				reader, err := f.Open()
 				if err != nil {
-					return err
+					return "", err
 				}
 				defer reader.Close()
 
 				// Создаем файл на диске
 				dst, err := os.Create(filePath)
 				if err != nil {
-					return err
+					return "", err
 				}
 				defer dst.Close()
 
 				// Копируем содержимое
 				if _, err := io.Copy(dst, reader); err != nil {
-					return err
+					return "", err
 				}
 
 				// Устанавливаем права файла
 				if err := os.Chmod(filePath, f.Mode()); err != nil {
-					return err
+					return "", err
 				}
 			}
 		}
 
-		return nil
+		return uuid, nil
 	} else {
-		return err
+		return "", err
 	}
-}
-
-func ParseZipArchive(name string) ([]byte, error) {
-	if archive, err := zip.OpenReader(name); err == nil {
-
-		defer archive.Close()
-		for _, f := range archive.File {
-			if f.Name == "content.xml" {
-				reader, err := f.Open()
-				if err != nil {
-					return nil, err
-				}
-				return io.ReadAll(reader)
-			}
-		}
-	} else {
-		return nil, err
-	}
-	return nil, errors.New("something wrong with package")
 }
 
 func ParseFromFile(filePath string) (*models.Package, error) {
@@ -109,6 +90,5 @@ func Parse(data []byte) (*models.Package, error) {
 	if err != nil {
 		return nil, err
 	}
-	pkg.PackageID = uuid.New().String()
 	return &pkg, nil
 }

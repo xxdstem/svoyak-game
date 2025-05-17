@@ -44,3 +44,8 @@ export type GameData = {
   Themes: Theme[];
 };
 
+export type Package = {
+    PackageID: string;
+    Rounds: GameData[];
+  };
+  

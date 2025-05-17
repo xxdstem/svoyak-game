@@ -3,13 +3,15 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'reac
 import { Link, useNavigate } from 'react-router';
 import http from '~/utils/axios';
 import { TextField } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { $currentUser, setUser } from '~/store/user';
 
 
 export default function Home() {
+  const dispatch = useDispatch();
+  const currentUser = useSelector($currentUser);
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const [isLoading, setLoading] = useState(true);
-  const [identified, setIdentified] = useState(null);
   const uploadPackage = async (e: ChangeEvent)=>{
     const file = e.target.files[0];
     if (!file) return;
@@ -34,22 +36,10 @@ export default function Home() {
   const identify = useCallback(async ()=>{
     var r = await http.putForm("/identify", {name: nickname});
     if(r.data){
-      setIdentified(r.data);
+      dispatch(setUser(r.data));
     }
     
   }, [nickname]);
-
-  useEffect(()=>{
-    var fetch = async () => {
-      var r = await http.get("/identify");
-      if (r.data){
-        setIdentified(r.data);
-        setLoading(false);
-      }
-    }
-    fetch();
-    
-  },[])
 
   return <>
   <input
@@ -59,11 +49,13 @@ export default function Home() {
         onChange={uploadPackage}
         style={{ display: 'none' }}
       />
-      {identified && <>
-      Салам, {identified.UserName}
-        <Button variant="contained" onClick={()=>fileInputRef.current.click()}   disableElevation color="primary" >
+      {currentUser && <>
+      Салам, {currentUser.UserName}
+        {currentUser.CurrentPackageId ? <Button variant="contained"  component={Link} to="/game"   disableElevation color="primary" >
+            вернуца в игру
+          </Button> : <Button variant="contained" onClick={()=>fileInputRef.current.click()}   disableElevation color="primary" >
             Залить пакет
-          </Button>
+          </Button>}
       </> || <>
         Введите ваш ник <br></br> <TextField onChange={(e)=>setNick(e.target.value)}></TextField> <Button onClick={identify}>Identify</Button>
       </>}

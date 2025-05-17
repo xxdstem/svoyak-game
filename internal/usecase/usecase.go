@@ -25,13 +25,14 @@ func New(l *logger.Logger, store Store) *uc {
 }
 
 func (uc *uc) UnpackAndLoadPackage(user *entity.User) *models.Package {
-	err := parser.UnpackZipArchive(user.SessionID)
+	uuid, err := parser.UnpackZipArchive(user.SessionID)
 	if err != nil {
 		log.Error("error unpack")
 		log.Fatal(err)
 	}
 
-	pkg, err := parser.ParseFromFile("./temp/pkg/" + user.SessionID + "/" + "content.xml")
+	pkg, err := parser.ParseFromFile("./temp/pkg/" + uuid + "/" + "content.xml")
+	pkg.PackageID = uuid
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -7,6 +7,7 @@ import (
 	"svoyak/internal/store"
 	"svoyak/internal/usecase"
 	apihandler "svoyak/pkg/apiHandler"
+	filehandler "svoyak/pkg/fileHandler"
 	"svoyak/pkg/logger"
 	spaHandler "svoyak/pkg/spaHandler"
 
@@ -24,10 +25,8 @@ func Run(log *logger.Logger) {
 	rr := r.PathPrefix("/api").Subrouter()
 	rr.Use(apihandler.New(log).Handle)
 	apiRouter.Register(rr)
-
-	// SPA handler
-	spa := spaHandler.GetHandler("web/dist")
-	r.PathPrefix("/").Handler(spa)
+	r.HandleFunc("/files/{packageID}/{fileType}/{file}", filehandler.Handle)
+	r.PathPrefix("/").HandlerFunc(spaHandler.Handle)
 
 	// CORS
 	c := cors.New(cors.Options{

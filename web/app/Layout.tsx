@@ -7,15 +7,19 @@ import {
   RouterProvider,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "react-router";
 
 import "./app.css";
 import Header from "./components/header/Header";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Box, Container, CssBaseline, styled, ThemeProvider } from "@mui/material";
 import Home from "./routes/home";
 import Game from "./routes/game";
+import http from "./utils/axios";
+import { setUser } from "./store/user";
+import { useDispatch } from "react-redux";
 
 
 const MainWrapper = styled("div")(() => ({
@@ -43,9 +47,14 @@ export const router = createBrowserRouter([{
 
 
 export function Layout(props:any) {
-
+  const { user } = useLoaderData();
+  const dispatch = useDispatch();
+  useEffect(()=>{
+    if(user) dispatch(setUser(user));
+  },[user])
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   return (<>
           <MainWrapper className="mainwrapper">
             <PageWrapper className="page-wrapper">
