@@ -6,8 +6,67 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 	"svoyak/internal/models"
 )
+
+func UnpackZipArchive(filename string) error {
+	archivePath := "./temp/" + filename + ".siq"
+	if archive, err := zip.OpenReader(archivePath); err == nil {
+		defer archive.Close() // Перенесем defer в начало
+		defer os.Remove(archivePath)
+		basePath := "./temp/pkg/" + filename
+
+		// Создаем корневую директорию
+		if err := os.MkdirAll(basePath, 0755); err != nil {
+			return err
+		}
+
+		for _, f := range archive.File {
+			filePath := filepath.Join(basePath, f.Name)
+
+			if f.FileInfo().IsDir() {
+				// Создаем директорию
+				if err := os.MkdirAll(filePath, 0755); err != nil {
+					return err
+				}
+			} else {
+				// Создаем родительские директории для файла
+				if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+					return err
+				}
+
+				// Открываем файл в архиве
+				reader, err := f.Open()
+				if err != nil {
+					return err
+				}
+				defer reader.Close()
+
+				// Создаем файл на диске
+				dst, err := os.Create(filePath)
+				if err != nil {
+					return err
+				}
+				defer dst.Close()
+
+				// Копируем содержимое
+				if _, err := io.Copy(dst, reader); err != nil {
+					return err
+				}
+
+				// Устанавливаем права файла
+				if err := os.Chmod(filePath, f.Mode()); err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	} else {
+		return err
+	}
+}
 
 func ParseZipArchive(name string) ([]byte, error) {
 	if archive, err := zip.OpenReader(name); err == nil {

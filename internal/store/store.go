@@ -1,17 +1,17 @@
 package store
 
 type store struct {
-	data map[int]any
+	data map[string]any
 }
 
 func New() *store {
-	return &store{data: make(map[int]any)}
+	return &store{data: make(map[string]any)}
 }
 
-func (s *store) Set(key int, value any) {
+func (s *store) Set(key string, value any) {
 	s.data[key] = value
 }
 
-func (s *store) Get(key int) any {
+func (s *store) Get(key string) any {
 	return s.data[key]
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Grid,
@@ -27,24 +27,49 @@ type Player = {
   color: string;
 };
 
-type Question = {
-  id: number;
-  category: string;
-  price: number;
-  text: string;
-  answer: string;
-  isAnswered: boolean;
-};
-
 type Host = {
   name: string;
   avatar: string;
 };
 
+type Question = {
+  Price: number;
+  Params: {
+    Name: string;
+    Type: string;
+    Items: {
+      Type: string;
+      Content: string;
+      Placement?: string;
+      Duration?: string;
+      IsRef?: boolean;
+      WaitForFinish?: boolean;
+    }[];
+  }[];
+  Right: {
+    Answers: string[];
+  };
+  isAnswered?: boolean;
+};
+
+type Theme = {
+  Name: string;
+  Questions: Question[];
+};
+
+type GameData = {
+  Name: string;
+  Type: string;
+  Themes: Theme[];
+};
+
+
+import axios from '../utils/axios';
+
 const Game: React.FC = () => {
   const theme = useTheme();
-  
-  // Состояния
+
+  const [gameData, setGameData] = useState<GameData|null>(null);
   const [players, setPlayers] = useState<Player[]>([
     { id: 1, name: 'Игрок 1', score: 0, avatar: 'P1', color: theme.palette.primary.main },
     { id: 2, name: 'Игрок 2', score: 0, avatar: 'P2', color: theme.palette.secondary.main },
@@ -55,16 +80,10 @@ const Game: React.FC = () => {
     avatar: 'H',
   });
 
-  const [questions, setQuestions] = useState<Question[]>([
-    { id: 1, category: 'История', price: 100, text: 'В каком году началась Вторая мировая война?', answer: '1939', isAnswered: false },
-    { id: 2, category: 'История', price: 200, text: 'Кто был первым президентом США?', answer: 'Джордж Вашингтон', isAnswered: false },
-    { id: 3, category: 'Наука', price: 100, text: 'Какой химический элемент обозначается символом "O"?', answer: 'Кислород', isAnswered: false },
-    { id: 4, category: 'Наука', price: 200, text: 'Сколько планет в Солнечной системе?', answer: '8', isAnswered: false },
-    { id: 5, category: 'Искусство', price: 100, text: 'Кто написал картину "Мона Лиза"?', answer: 'Леонардо да Винчи', isAnswered: false },
-    { id: 6, category: 'Искусство', price: 200, text: 'Какой композитор написал "Лунную сонату"?', answer: 'Бетховен', isAnswered: false },
-  ]);
+  // Преобразуем вопросы из API в наш формат с добавлением isAnswered
+  const [themes, setThemes] = useState<Theme[]>([]);
 
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<{themeIndex: number, questionIndex: number} | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
   const [openAddPlayer, setOpenAddPlayer] = useState(false);
   const [newPlayerName, setNewPlayerName] = useState('');
@@ -78,9 +97,9 @@ const Game: React.FC = () => {
   ];
 
   // Обработчики событий
-  const handleQuestionClick = (question: Question) => {
-    if (!question.isAnswered) {
-      setCurrentQuestion(question);
+  const handleQuestionClick = (themeIndex: number, questionIndex: number) => {
+    if (!themes[themeIndex].Questions[questionIndex].isAnswered) {
+      setCurrentQuestion({ themeIndex, questionIndex });
       setShowAnswer(false);
     }
   };
@@ -94,15 +113,17 @@ const Game: React.FC = () => {
   };
 
   const handleAddScore = (playerId: number, points: number) => {
+    if (!currentQuestion) return;
+    
     setPlayers(players.map(player => 
       player.id === playerId ? { ...player, score: player.score + points } : player
     ));
     
-    if (currentQuestion) {
-      setQuestions(questions.map(q => 
-        q.id === currentQuestion.id ? { ...q, isAnswered: true } : q
-      ));
-    }
+    setThemes(prevThemes => {
+      const newThemes = [...prevThemes];
+      newThemes[currentQuestion.themeIndex].Questions[currentQuestion.questionIndex].isAnswered = true;
+      return newThemes;
+    });
     
     setCurrentQuestion(null);
   };
@@ -128,8 +149,48 @@ const Game: React.FC = () => {
     }
   };
 
-  // Группировка вопросов по категориям
-  const categories = [...new Set(questions.map(q => q.category))];
+  // Получение текста вопроса
+  const getQuestionText = (question: Question) => {
+    const questionParams = question.Params.find(p => p.Name === 'question');
+    if (!questionParams) return '';
+
+    // Ищем текстовый контент (не изображения/аудио)
+    const textItems = questionParams.Items.filter(item => 
+      !['image', 'audio'].includes(item.Type) && 
+      item.Placement !== 'replic' &&
+      item.Content.trim()
+    );
+
+    return textItems.map(item => item.Content).join('\n');
+  };
+
+  // Получение ответа
+  const getAnswerText = (question: Question) => {
+    return question.Right.Answers.join(' или ');
+  };
+
+  // Получение медиа (изображения/аудио) вопроса
+  const getQuestionMedia = (question: Question) => {
+    const questionParams = question.Params.find(p => p.Name === 'question');
+    if (!questionParams) return null;
+
+    return questionParams.Items.find(item => ['image', 'audio'].includes(item.Type));
+  };
+
+  useEffect(()=>{
+    axios.get("/round/1").then((r)=>{
+      var resp : GameData = r.data;
+      setGameData(resp);
+      setThemes(resp.Themes.map(theme => ({
+        ...theme,
+        Questions: theme.Questions.map(question => ({
+          ...question,
+          isAnswered: false
+        }))
+      })));
+    })
+    
+  },[])
 
   return (
     <Box sx={{ 
@@ -187,13 +248,13 @@ const Game: React.FC = () => {
             flexDirection: 'column',
           }}>
             <Typography variant="h4" align="center" gutterBottom sx={{ marginBottom: 3 }}>
-              СВОЯ ИГРА
+              {gameData?.Name}
             </Typography>
             
             {/* Сетка категорий и вопросов */}
             <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-              {categories.map(category => (
-                <GridLegacy item xs={12 / categories.length} key={category}>
+              {themes.map((gameTheme, themeIndex) => (
+                <GridLegacy item xs={12 / themes.length} key={themeIndex}>
                   <Card sx={{ 
                     backgroundColor: theme.palette.primary.light,
                     color: theme.palette.text.primary,
@@ -201,18 +262,17 @@ const Game: React.FC = () => {
                   }}>
                     <CardContent>
                       <Typography variant="h6" align="center">
-                        {category}
+                        {gameTheme.Name}
                       </Typography>
                     </CardContent>
                   </Card>
                   
-                  {questions
-                    .filter(q => q.category === category)
-                    .sort((a, b) => a.price - b.price)
-                    .map(question => (
+                  {gameTheme.Questions
+                    .sort((a, b) => a.Price - b.Price)
+                    .map((question, questionIndex) => (
                       <Card 
-                        key={question.id}
-                        onClick={() => handleQuestionClick(question)}
+                        key={questionIndex}
+                        onClick={() => handleQuestionClick(themeIndex, questionIndex)}
                         sx={{ 
                           marginBottom: 1,
                           cursor: question.isAnswered ? 'default' : 'pointer',
@@ -233,7 +293,7 @@ const Game: React.FC = () => {
                       >
                         <CardContent>
                           <Typography variant="h5" align="center">
-                            {question.isAnswered ? '' : question.price}
+                            {question.isAnswered ? '' : question.Price}
                           </Typography>
                         </CardContent>
                       </Card>
@@ -300,82 +360,113 @@ const Game: React.FC = () => {
       </Box>
       
       {/* Диалог вопроса */}
-      <Dialog 
-        open={!!currentQuestion} 
-        onClose={handleCloseQuestion}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: {
-            backgroundColor: theme.palette.background.paper,
-          }
-        }}
-      >
-        {currentQuestion && (
-          <>
-            <DialogTitle sx={{ 
-              backgroundColor: theme.palette.primary.dark, 
-              color: theme.palette.text.primary 
-            }}>
-              {currentQuestion.category} за {currentQuestion.price}
-            </DialogTitle>
-            <DialogContent sx={{ padding: 4 }}>
-              <Typography variant="h5" gutterBottom>
-                {currentQuestion.text}
-              </Typography>
-              
-              {showAnswer && (
-                <>
-                  <Divider sx={{ marginY: 3 }} />
-                  <Typography variant="h6" color="primary">
-                    Ответ:
-                  </Typography>
-                  <Typography variant="h5">
-                    {currentQuestion.answer}
-                  </Typography>
-                </>
-              )}
-            </DialogContent>
-            <DialogActions sx={{ 
-              justifyContent: 'space-between', 
-              padding: 2,
-              backgroundColor: theme.palette.background.default,
-            }}>
-              <Box>
-                {!showAnswer && (
-                  <Button 
-                    onClick={handleShowAnswer} 
-                    color="primary" 
-                    variant="contained"
-                  >
-                    Показать ответ
-                  </Button>
-                )}
-              </Box>
-              
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                {players.map(player => (
-                  <Button
-                    key={player.id}
-                    onClick={() => handleAddScore(player.id, currentQuestion.price)}
-                    variant="contained"
-                    sx={{ 
-                      backgroundColor: player.color,
-                      color: theme.palette.getContrastText(player.color),
-                      '&:hover': {
-                        backgroundColor: player.color,
-                        opacity: 0.9,
-                      },
-                    }}
-                  >
-                    {player.name} (+{currentQuestion.price})
-                  </Button>
-                ))}
-              </Box>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+      {currentQuestion && (
+        <Dialog 
+          open={!!currentQuestion} 
+          onClose={handleCloseQuestion}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            sx: {
+              backgroundColor: theme.palette.background.paper,
+            }
+          }}
+        >
+          {(() => {
+            const gameTheme = themes[currentQuestion.themeIndex];
+            const question = gameTheme.Questions[currentQuestion.questionIndex];
+            const questionText = getQuestionText(question);
+            const answerText = getAnswerText(question);
+            const media = getQuestionMedia(question);
+            
+            return (
+              <>
+                <DialogTitle sx={{ 
+                  backgroundColor: theme.palette.primary.dark, 
+                  color: theme.palette.text.primary 
+                }}>
+                  {gameTheme.Name} за {question.Price}
+                </DialogTitle>
+                <DialogContent sx={{ padding: 4 }}>
+                  {media?.Type === 'image' && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: 2 }}>
+                      <img 
+                        src={media.Content} 
+                        alt="Question media" 
+                        style={{ maxWidth: '100%', maxHeight: '300px' }} 
+                      />
+                    </Box>
+                  )}
+                  
+                  {media?.Type === 'audio' && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: 2 }}>
+                      <audio controls>
+                        <source src={media.Content} type="audio/mpeg" />
+                        Ваш браузер не поддерживает аудио элемент.
+                      </audio>
+                    </Box>
+                  )}
+                  
+                  {questionText && (
+                    <Typography variant="h5" gutterBottom>
+                      {questionText}
+                    </Typography>
+                  )}
+                  
+                  {showAnswer && (
+                    <>
+                      <Divider sx={{ marginY: 3 }} />
+                      <Typography variant="h6" color="primary">
+                        Ответ:
+                      </Typography>
+                      <Typography variant="h5">
+                        {answerText}
+                      </Typography>
+                    </>
+                  )}
+                </DialogContent>
+                <DialogActions sx={{ 
+                  justifyContent: 'space-between', 
+                  padding: 2,
+                  backgroundColor: theme.palette.background.default,
+                }}>
+                  <Box>
+                    {!showAnswer && (
+                      <Button 
+                        onClick={handleShowAnswer} 
+                        color="primary" 
+                        variant="contained"
+                      >
+                        Показать ответ
+                      </Button>
+                    )}
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    {players.map(player => (
+                      <Button
+                        key={player.id}
+                        onClick={() => handleAddScore(player.id, question.Price)}
+                        variant="contained"
+                        sx={{ 
+                          backgroundColor: player.color,
+                          color: theme.palette.getContrastText(player.color),
+                          '&:hover': {
+                            backgroundColor: player.color,
+                            opacity: 0.9,
+                          },
+                        }}
+                      >
+                        {player.name} (+{question.Price})
+                      </Button>
+                    ))}
+                  </Box>
+                </DialogActions>
+              </>
+            );
+          })()}
+        </Dialog>
+      )}
       
       {/* Диалог добавления игрока */}
       <Dialog 

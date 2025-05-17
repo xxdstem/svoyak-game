@@ -3,6 +3,5 @@ import Game from "./routes/game";
 
 export default [
     { index: true, Component: Home},
-    { path: 'game', Component: Game},
-        
+    { path: 'game/:gameId', Component: Game},      
 ];
