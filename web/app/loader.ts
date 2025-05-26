@@ -5,4 +5,5 @@ export default async function Loader() {
       if (r.data){
         return {user: r.data}
       }
+      return {user: null}
 }

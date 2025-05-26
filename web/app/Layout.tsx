@@ -37,34 +37,23 @@ const PageWrapper = styled("div")(() => ({
   backgroundColor: "transparent",
 }));
 
-export const router = createBrowserRouter([{
-  path: "/",
-	element: <Home />},
-  {
-    path: "/game",
-    element: <Game />}
-  ], {basename: import.meta.env.BASE_URL});
-
-
-export function Layout(props:any) {
+export default function Layout(props:any) {
   const { user } = useLoaderData();
   const dispatch = useDispatch();
+
   useEffect(()=>{
     if(user) dispatch(setUser(user));
   },[user])
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (<>
           <MainWrapper className="mainwrapper">
-            <PageWrapper className="page-wrapper">
-              <Header toggleMobileSidebar={()=>setMobileSidebarOpen(true)}/>
-                  <Box sx={{ minHeight: "calc(100vh - 170px)" }}>
-                    {props.children ?? null}
-                    <Outlet/>
-                  </Box>
-              
-            </PageWrapper>
+              <PageWrapper className="page-wrapper">
+                <Header toggleMobileSidebar={()=>null}/>
+                    <Box sx={{ minHeight: "calc(100vh - 170px)" }}>
+                      {props.children ?? null}
+                      <Outlet/>
+                    </Box>
+              </PageWrapper>
           </MainWrapper>
         </>
   );

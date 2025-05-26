@@ -11,9 +11,9 @@ export default function Home() {
   const dispatch = useDispatch();
   const currentUser = useSelector($currentUser);
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadPackage = async (e: ChangeEvent)=>{
-    const file = e.target.files[0];
+    let file = (e.target as HTMLInputElement)!.files![0];
     if (!file) return;
 
     try {
@@ -52,8 +52,8 @@ export default function Home() {
       {currentUser && <>
       Салам, {currentUser.UserName}
         {currentUser.CurrentPackageId ? <Button variant="contained"  component={Link} to="/game"   disableElevation color="primary" >
-            вернуца в игру
-          </Button> : <Button variant="contained" onClick={()=>fileInputRef.current.click()}   disableElevation color="primary" >
+            adssa
+          </Button> : <Button variant="contained" onClick={()=>fileInputRef.current!.click()}   disableElevation color="primary" >
             Залить пакет
           </Button>}
       </> || <>

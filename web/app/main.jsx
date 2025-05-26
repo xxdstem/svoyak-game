@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './app.css'
 import { basedarkTheme } from "./themes.tsx";
-import { Layout } from './Layout.tsx'
+import Layout from './Layout.tsx'
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import { Provider } from 'react-redux';

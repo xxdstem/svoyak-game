@@ -42,7 +42,6 @@ func (h *handler) Register(router *mux.Router) {
 
 func (h *handler) GetIdentify(w http.ResponseWriter, r *http.Request) {
 	user := h.uc.GetUser(r)
-	log.Info("WRONG!`")
 	if user != nil {
 		j, _ := json.Marshal(user)
 		w.Write(j)

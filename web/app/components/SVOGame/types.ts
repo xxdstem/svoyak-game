@@ -47,5 +47,5 @@ export type GameData = {
 export type Package = {
     PackageID: string;
     Rounds: GameData[];
-  };
+};
   

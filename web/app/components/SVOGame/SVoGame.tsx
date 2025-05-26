@@ -20,7 +20,7 @@ import {
 
 import type { GameData, Host, Package, Player, Question, Theme } from './types';
 
-export const Game: React.FC = (props: any) => {
+export const Game: React.FC<{ package: Package }> = (props : { package: Package }) => {
     const theme = useTheme();
 
     const pkg: Package = props.package;
