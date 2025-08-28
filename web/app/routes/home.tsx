@@ -52,7 +52,7 @@ export default function Home() {
       {currentUser && <>
       Салам, {currentUser.UserName}
         {currentUser.CurrentPackageId ? <Button variant="contained"  component={Link} to="/game"   disableElevation color="primary" >
-            adssa
+            Вернуться в игру
           </Button> : <Button variant="contained" onClick={()=>fileInputRef.current!.click()}   disableElevation color="primary" >
             Залить пакет
           </Button>}
