@@ -1,9 +1,10 @@
+import type { User } from "./types";
 import http from "./utils/axios";
 
-export default async function Loader() {
+export default async function Loader() : Promise<User | null> {
     var r = await http.get("/identify");
-      if (r.data){
-        return {user: r.data}
-      }
-      return {user: null}
+    if (r.data){
+      return r.data;
+    }
+    return null
 }

@@ -1,3 +1,9 @@
 export type User = {
-    UserName: string
+    UserName: string;
+    SessionID: string;
+    CurrentPackageId: string;
+}
+
+export type StoreState = {
+    user: User;
 }

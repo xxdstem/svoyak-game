@@ -38,7 +38,7 @@ const PageWrapper = styled("div")(() => ({
 }));
 
 export default function Layout(props:any) {
-  const { user } = useLoaderData();
+  const user = useLoaderData();
   const dispatch = useDispatch();
 
   useEffect(()=>{
