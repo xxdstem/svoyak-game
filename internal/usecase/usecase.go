@@ -3,6 +3,7 @@ package usecase
 import (
 	"errors"
 	"net/http"
+	"os"
 	"svoyak/internal/entity"
 	"svoyak/internal/models"
 	"svoyak/pkg/logger"
@@ -55,7 +56,7 @@ func (uc *uc) GetUser(r *http.Request) *entity.User {
 
 func (uc *uc) NewUser(sessionID string, name string) (*entity.User, error) {
 	if uc.store.FindByName(name) != nil {
-		return nil, errors.New("This name is already taken")
+		return nil, errors.New("this name is already taken")
 	}
 	user := &entity.User{SessionID: sessionID, UserName: name}
 	uc.store.Set(sessionID, user)
@@ -73,6 +74,7 @@ func (uc *uc) Logout(r *http.Request) error {
 }
 
 func (uc *uc) AbortGame(user *entity.User) error {
+	os.RemoveAll("./temp/pkg/" + user.SessionID)
 	user.CurrentPackage = nil
 	user.CurrentPackageId = ""
 	return nil
