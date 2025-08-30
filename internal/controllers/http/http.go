@@ -17,7 +17,7 @@ type Handler interface {
 }
 
 type UseCase interface {
-	NewUser(sessionID string, name string) *entity.User
+	NewUser(sessionID string, name string) (*entity.User, error)
 	GetUser(r *http.Request) *entity.User
 	UnpackAndLoadPackage(user *entity.User) (*models.Package, error)
 	AbortGame(user *entity.User) error
@@ -50,14 +50,18 @@ func (h *handler) GetIdentify(w http.ResponseWriter, r *http.Request) {
 		w.Write(j)
 		return
 	}
-	http.Error(w, "No identity", http.StatusNoContent)
+	http.Error(w, "No identity", http.StatusUnauthorized)
 
 }
 
 func (h *handler) SetIdentify(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := r.Context().Value("sessionID").(string)
-	user := h.uc.NewUser(sessionID, r.FormValue("name"))
+	user, err := h.uc.NewUser(sessionID, r.FormValue("name"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	j, _ := json.Marshal(user)
 	w.Write(j)
 }

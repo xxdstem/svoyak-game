@@ -1,6 +1,9 @@
 package store
 
-import "svoyak/internal/entity"
+import (
+	"strings"
+	"svoyak/internal/entity"
+)
 
 type store struct {
 	data map[string]*entity.User
@@ -21,4 +24,14 @@ func (s *store) Get(key string) (*entity.User, bool) {
 
 func (s *store) Del(key string) {
 	delete(s.data, key)
+}
+
+func (s *store) FindByName(name string) *entity.User {
+	lowerName := strings.ToLower(name)
+	for _, u := range s.data {
+		if strings.ToLower(u.UserName) == lowerName {
+			return u
+		}
+	}
+	return nil
 }

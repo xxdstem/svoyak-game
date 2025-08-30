@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"net/http"
 	"svoyak/internal/entity"
 	"svoyak/internal/models"
@@ -14,6 +15,7 @@ type Store interface {
 	Get(index string) (*entity.User, bool)
 	Set(index string, value *entity.User)
 	Del(key string)
+	FindByName(name string) *entity.User
 }
 
 type uc struct {
@@ -51,10 +53,13 @@ func (uc *uc) GetUser(r *http.Request) *entity.User {
 	return user
 }
 
-func (uc *uc) NewUser(sessionID string, name string) *entity.User {
+func (uc *uc) NewUser(sessionID string, name string) (*entity.User, error) {
+	if uc.store.FindByName(name) != nil {
+		return nil, errors.New("This name is already taken")
+	}
 	user := &entity.User{SessionID: sessionID, UserName: name}
 	uc.store.Set(sessionID, user)
-	return user
+	return user, nil
 }
 
 func (uc *uc) Logout(r *http.Request) error {

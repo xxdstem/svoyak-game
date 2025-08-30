@@ -34,9 +34,14 @@ export default function Home() {
   const [nickname, setNick] = useState<string>("");
 
   const identify = useCallback(async ()=>{
-    var r = await http.putForm("/identify", {name: nickname});
-    if(r.data){
-      dispatch(setUser(r.data));
+    try {
+      var r = await http.putForm("/identify", {name: nickname});
+      if(r.data){
+        dispatch(setUser(r.data));
+      }
+    } catch(error) {
+      console.error(error);
+      alert(error.response.data)
     }
     
   }, [nickname]);
