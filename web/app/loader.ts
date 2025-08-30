@@ -5,19 +5,13 @@ import { store } from "./store/store";
 
 
 export default async function Loader() : Promise<User | null> {
-  let l = localStorage.getItem("user")
-  let user: User;
-  if(l === null){
-    try{
-      var r = await http.get("/identify");
-      if (!r.data) return null;
-      user = r.data;
-    }catch{
-      return null;
-    }
-  }else{
-    user = JSON.parse(l)
+  try{
+    var r = await http.get("/identify");
+    if (!r.data) return null;
+    let user = r.data;
+    store.dispatch(setUser(user));
+    return user;
+  }catch{
+    return null;
   }
-  store.dispatch(setUser(user));
-  return user
 }
