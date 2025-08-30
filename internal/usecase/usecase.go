@@ -13,6 +13,7 @@ var log *logger.Logger
 type Store interface {
 	Get(index string) (*entity.User, bool)
 	Set(index string, value *entity.User)
+	Del(key string)
 }
 
 type uc struct {
@@ -54,6 +55,16 @@ func (uc *uc) NewUser(sessionID string, name string) *entity.User {
 	user := &entity.User{SessionID: sessionID, UserName: name}
 	uc.store.Set(sessionID, user)
 	return user
+}
+
+func (uc *uc) Logout(r *http.Request) error {
+	sessionID := r.Context().Value("sessionID").(string)
+	_, ok := uc.store.Get(sessionID)
+	if !ok {
+		return nil
+	}
+	uc.store.Del(sessionID)
+	return nil
 }
 
 func (uc *uc) AbortGame(user *entity.User) error {

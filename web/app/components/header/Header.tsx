@@ -9,14 +9,16 @@ import Logo from "../../../assets/logo.svg"
 import { $currentUser, clearUser } from '~/store/user';
 import { useDispatch, useSelector } from 'react-redux';
 import type { User } from '~/types';
+import http from '~/utils/axios';
 interface ItemType {
   toggleMobileSidebar:  (event: React.MouseEvent<HTMLElement>) => void;
 }
 
 const Header = ({toggleMobileSidebar}: ItemType) => {
   const dispatch = useDispatch();
-  
+
   const logout = ()=>{
+    http.post("/logout")
     dispatch(clearUser());
   }
   const currentUser: User = useSelector($currentUser);

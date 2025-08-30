@@ -37,6 +37,7 @@ func New(l *logger.Logger, uc UseCase) Handler {
 func (h *handler) Register(router *mux.Router) {
 	router.HandleFunc("/identify", h.GetIdentify).Methods("GET")
 	router.HandleFunc("/identify", h.SetIdentify).Methods("PUT")
+	router.HandleFunc("/logout", h.Logout).Methods("POST")
 	router.HandleFunc("/package/upload", h.Upload).Methods("POST")
 	router.HandleFunc("/game/get", h.GetGame)
 	router.HandleFunc("/game/abort", h.AbortGame)
@@ -59,6 +60,10 @@ func (h *handler) SetIdentify(w http.ResponseWriter, r *http.Request) {
 	user := h.uc.NewUser(sessionID, r.FormValue("name"))
 	j, _ := json.Marshal(user)
 	w.Write(j)
+}
+
+func (h *handler) Logout(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func (h *handler) GetGame(w http.ResponseWriter, r *http.Request) {

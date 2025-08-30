@@ -18,3 +18,7 @@ func (s *store) Get(key string) (*entity.User, bool) {
 	k, ok := s.data[key]
 	return k, ok
 }
+
+func (s *store) Del(key string) {
+	delete(s.data, key)
+}
