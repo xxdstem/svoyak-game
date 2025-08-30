@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import http from '~/utils/axios';
 import {
   Box,
   Grid,
@@ -19,15 +20,14 @@ import {
 } from '@mui/material';
 
 import type { GameData, Host, Package, Player, Question, Theme } from './types';
+import { useNavigate } from 'react-router';
 
 export const Game: React.FC<{ package: Package }> = (props : { package: Package }) => {
     const theme = useTheme();
 
     const pkg: Package = props.package;
-    console.log(pkg)
-    console.log(pkg.PackageID); 
     const rounds: GameData[] = pkg.Rounds;
-
+    const navigate = useNavigate();
     const [currentRound, setCurrentRound] = useState(0);
     const gameData = useMemo<GameData>(()=>rounds[currentRound], [rounds, currentRound]);
     const [players, setPlayers] = useState <Player[]> ([{
@@ -112,6 +112,13 @@ export const Game: React.FC<{ package: Package }> = (props : { package: Package 
 
         setCurrentQuestion(null);
     };
+
+    const handleAbortGame = async () =>{
+      if(window.confirm("Вы уверены?")){
+        var r = await http.get("/game/abort");
+        navigate("/")
+      }
+    }
 
     const handleAddPlayer = () => {
         if (newPlayerName.trim() && players.length < 5) {
@@ -200,15 +207,15 @@ export const Game: React.FC<{ package: Package }> = (props : { package: Package 
             <Typography variant="subtitle1" gutterBottom>
               Управление игрой
             </Typography>
-            {/* <Button 
+            <Button 
               variant="contained" 
-              color="primary" 
-              onClick={() => setOpenAddPlayer(true)}
+              color="error" 
+              onClick={() => handleAbortGame()}
               disabled={players.length >= 5}
               sx={{ marginBottom: 2 }}
             >
-              Добавить игрока
-            </Button> */}
+              Завершить игру
+            </Button>
           </Paper>
         </GridLegacy>
         

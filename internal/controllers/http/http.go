@@ -19,7 +19,8 @@ type Handler interface {
 type UseCase interface {
 	NewUser(sessionID string, name string) *entity.User
 	GetUser(r *http.Request) *entity.User
-	UnpackAndLoadPackage(user *entity.User) *models.Package
+	UnpackAndLoadPackage(user *entity.User) (*models.Package, error)
+	AbortGame(user *entity.User) error
 }
 
 type handler struct {
@@ -37,7 +38,8 @@ func (h *handler) Register(router *mux.Router) {
 	router.HandleFunc("/identify", h.GetIdentify).Methods("GET")
 	router.HandleFunc("/identify", h.SetIdentify).Methods("PUT")
 	router.HandleFunc("/package/upload", h.Upload).Methods("POST")
-	router.HandleFunc("/getGameData", h.Get)
+	router.HandleFunc("/game/get", h.GetGame)
+	router.HandleFunc("/game/abort", h.AbortGame)
 }
 
 func (h *handler) GetIdentify(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +61,7 @@ func (h *handler) SetIdentify(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func (h *handler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetGame(w http.ResponseWriter, r *http.Request) {
 	user := h.uc.GetUser(r)
 	if user == nil {
 		http.Error(w, "Non authorized", http.StatusUnauthorized)
@@ -104,7 +106,17 @@ func (h *handler) Upload(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error saving file", http.StatusInternalServerError)
 		return
 	}
-	h.uc.UnpackAndLoadPackage(user)
+	_, err = h.uc.UnpackAndLoadPackage(user)
+	if err != nil {
+		log.Error(err)
+		return
+	}
 	j, _ := json.Marshal(entity.IdentifyResponse{SessionID: user.SessionID})
 	w.Write(j)
+}
+
+func (h *handler) AbortGame(w http.ResponseWriter, r *http.Request) {
+	user := h.uc.GetUser(r)
+	h.uc.AbortGame(user)
+	w.WriteHeader(http.StatusNoContent)
 }

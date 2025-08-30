@@ -24,21 +24,21 @@ func New(l *logger.Logger, store Store) *uc {
 	return &uc{store: store}
 }
 
-func (uc *uc) UnpackAndLoadPackage(user *entity.User) *models.Package {
+func (uc *uc) UnpackAndLoadPackage(user *entity.User) (*models.Package, error) {
 	uuid, err := parser.UnpackZipArchive(user.SessionID)
 	if err != nil {
 		log.Error("error unpack")
-		log.Fatal(err)
+		return nil, err
 	}
 
 	pkg, err := parser.ParseFromFile("./temp/pkg/" + uuid + "/" + "content.xml")
 	pkg.PackageID = uuid
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	user.CurrentPackage = pkg
 	user.CurrentPackageId = pkg.PackageID
-	return pkg
+	return pkg, nil
 }
 
 func (uc *uc) GetUser(r *http.Request) *entity.User {
@@ -54,4 +54,10 @@ func (uc *uc) NewUser(sessionID string, name string) *entity.User {
 	user := &entity.User{SessionID: sessionID, UserName: name}
 	uc.store.Set(sessionID, user)
 	return user
+}
+
+func (uc *uc) AbortGame(user *entity.User) error {
+	user.CurrentPackage = nil
+	user.CurrentPackageId = ""
+	return nil
 }
