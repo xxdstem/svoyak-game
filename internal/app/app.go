@@ -5,7 +5,9 @@ import (
 	"os"
 	api "svoyak/internal/controllers/http"
 	"svoyak/internal/store"
-	"svoyak/internal/usecase"
+	"svoyak/internal/usecase/game"
+	"svoyak/internal/usecase/room"
+	"svoyak/internal/usecase/user"
 	apihandler "svoyak/pkg/apiHandler"
 	filehandler "svoyak/pkg/fileHandler"
 	"svoyak/pkg/logger"
@@ -19,9 +21,12 @@ func Run(log *logger.Logger) {
 	// Clean temp folder
 	os.RemoveAll("./temp/")
 	store := store.New()
-	usecase := usecase.New(log, store)
+
+	userUseCase := user.New(log, store)
+	roomUseCase := room.New(log, store)
+	gameUseCase := game.New(log, store)
 	r := mux.NewRouter()
-	apiRouter := api.New(log, usecase)
+	apiRouter := api.New(log, userUseCase, roomUseCase, gameUseCase)
 	rr := r.PathPrefix("/api").Subrouter()
 	rr.Use(apihandler.New(log).Handle)
 	apiRouter.Register(rr)

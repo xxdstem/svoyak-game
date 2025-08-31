@@ -1,25 +1,36 @@
 import { createSlice } from '@reduxjs/toolkit';
-import type { StoreState } from '~/types';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import type { StoreState, User } from '~/types';
 
 
 
-const initialState = null;
+const initialState: User | null = null;
 
 const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser: (state, action) => {
+    leaveRoom: (state: User | null) => {
+      if (state) {
+        state.room_id = "";
+      }
+    },
+    joinRoom: (state: User | null, action) => {
+      if (state) {
+        state.room_id = action.payload;
+      }
+    },
+    
+    setUser: (state: User | null, action) => {
       return action.payload;
     },
-    clearUser: (state) => {
-      localStorage.removeItem("user");
+    clearUser: () => {
       return null;
     }
   }
 });
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUser, clearUser, leaveRoom, joinRoom } = userSlice.actions;
 export const $currentUser = (state: StoreState) => state.user;
 
 export default userSlice.reducer;

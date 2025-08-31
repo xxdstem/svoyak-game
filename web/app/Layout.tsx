@@ -5,6 +5,9 @@ import {
 import "./app.css";
 import Header from "./components/header/Header";
 import { Box, Container, CssBaseline, styled, ThemeProvider } from "@mui/material";
+import { useSelector } from 'react-redux';
+import { useLocation, Navigate } from 'react-router';
+import { $currentUser } from "~/store/user";
 
 
 const MainWrapper = styled("div")(() => ({
@@ -23,11 +26,18 @@ const PageWrapper = styled("div")(() => ({
 }));
 
 export default function Layout(props:any) {
+  const user = useSelector($currentUser);
+  const location = useLocation();
+  const isLoginPage = location.pathname === '/login';
+
+  if (!user && !isLoginPage) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (<>
           <MainWrapper className="mainwrapper">
               <PageWrapper className="page-wrapper">
-                <Header toggleMobileSidebar={()=>null}/>
+                <Header/>
                     <Box sx={{ minHeight: "calc(100vh - 170px)" }}>
                       {props.children ?? null}
                       <Outlet/>

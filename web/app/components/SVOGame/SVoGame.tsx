@@ -21,9 +21,13 @@ import {
 
 import type { GameData, Host, Package, Player, Question, Theme } from './types';
 import { useNavigate } from 'react-router';
+import { useDispatch } from 'react-redux';
+import { leaveRoom } from '~/store/user';
 
 export const Game: React.FC<{ package: Package }> = (props : { package: Package }) => {
+
     const theme = useTheme();
+    const dispatch = useDispatch();
 
     const pkg: Package = props.package;
     const rounds: GameData[] = pkg.Rounds;
@@ -116,6 +120,7 @@ export const Game: React.FC<{ package: Package }> = (props : { package: Package 
     const handleAbortGame = async () =>{
       if(window.confirm("Вы уверены?")){
         var r = await http.get("/game/abort");
+        dispatch(leaveRoom())
         navigate("/")
       }
     }

@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, AppBar, Toolbar, styled, Stack, IconButton, Badge, Button, Typography } from '@mui/material';
 
 import PropTypes from 'prop-types';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import MenuIcon from '@mui/icons-material/Menu';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import Logo from "../../../assets/logo.svg"
@@ -10,24 +10,22 @@ import { $currentUser, clearUser } from '~/store/user';
 import { useDispatch, useSelector } from 'react-redux';
 import type { User } from '~/types';
 import http from '~/utils/axios';
-interface ItemType {
-  toggleMobileSidebar:  (event: React.MouseEvent<HTMLElement>) => void;
-}
 
-const Header = ({toggleMobileSidebar}: ItemType) => {
+const Header = () => {
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   const logout = ()=>{
     http.post("/logout")
     dispatch(clearUser());
+    navigate("/")
   }
-  const currentUser: User = useSelector($currentUser);
+  const currentUser = useSelector($currentUser);
   const AppBarStyled = styled(AppBar)(({ theme }) => ({
     boxShadow: 'none',
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.mode === 'light' ? theme.palette.primary.main : theme.palette.background.paper,
     justifyContent: 'center',
     backdropFilter: 'blur(4px)',
-    // opacity: 0.8,
+    opacity: 0.8,
     [theme.breakpoints.up('lg')]: {
       minHeight: '70px',
     },
@@ -40,19 +38,7 @@ const Header = ({toggleMobileSidebar}: ItemType) => {
   return (
     <AppBarStyled position="sticky" color="default">
       <ToolbarStyled>
-        <IconButton
-          color="inherit"
-          aria-label="menu"
-          onClick={toggleMobileSidebar}
-          sx={{
-            display: {
-              lg: "none",
-              xs: "inline",
-            },
-          }}
-        >
-          <MenuIcon width="20" height="20" />
-        </IconButton>
+        
         <Link to="/"><img height={'52'} src={Logo}></img></Link>
           
         <Box flexGrow={1} />
@@ -61,7 +47,7 @@ const Header = ({toggleMobileSidebar}: ItemType) => {
             Login
           </Button>
           : <>
-          <Typography>{currentUser.UserName}</Typography>
+          <Typography>{currentUser.username}</Typography>
           <IconButton
             onClick={()=>logout()}
             sx={{marginLeft: '8px'}}
@@ -75,7 +61,6 @@ const Header = ({toggleMobileSidebar}: ItemType) => {
           </IconButton>
           </>}
           
-          {/* <Profile /> */}
         </Stack>
       </ToolbarStyled>
     </AppBarStyled>

@@ -10,7 +10,8 @@ export default function App (){
   const [gameData, setGameData] = useState<Package>();
 
   useEffect(()=>{
-    http.get("/game/get").then((r)=>{
+    http.get("/rooms/get").then(r=>console.log(r.data));
+    http.get("/game/gamedata").then((r)=>{
       var resp : Package = r.data;
       setGameData(resp);
     }).catch((err)=>{

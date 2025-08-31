@@ -13,10 +13,11 @@ import (
 
 func UnpackZipArchive(filename string) (string, error) {
 	archivePath := "./temp/" + filename + ".siq"
+	defer os.RemoveAll("./temp/" + filename)
 	uuid := uuid.New().String()
 	if archive, err := zip.OpenReader(archivePath); err == nil {
 		defer archive.Close()
-		defer os.Remove(archivePath)
+
 		basePath := "./temp/pkg/" + uuid
 
 		// Создаем корневую директорию

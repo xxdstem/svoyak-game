@@ -1,0 +1,61 @@
+package dto
+
+import "svoyak/internal/entity"
+
+type userResponse struct {
+	SessionID string `json:"session_id"`
+	RoomID    string `json:"room_id"`
+	UserName  string `json:"username"`
+}
+
+func UserResponse(user *entity.User) userResponse {
+	var roomID string
+	if user.Room != nil {
+		roomID = user.Room.ID
+	}
+	return userResponse{
+		SessionID: user.SessionID,
+		RoomID:    roomID,
+		UserName:  user.UserName,
+	}
+}
+
+type roomResponse struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	WithPassword bool   `json:"with_password"`
+	PackageID    string `json:"package_id"`
+	PackageName  string `json:"package_name"`
+	PlayersMax   int    `json:"players_max"`
+	PlayersCount int    `json:"players_count"`
+}
+
+func ListRoomsToDto(rooms []*entity.Room) []roomResponse {
+	result := make([]roomResponse, 0, len(rooms))
+	for _, room := range rooms {
+		result = append(result, RoomResponse(room))
+	}
+	return result
+}
+
+func RoomResponse(room *entity.Room) roomResponse {
+	return roomResponse{
+		ID:           room.ID,
+		Name:         room.Name,
+		WithPassword: room.Password != "",
+		PackageID:    room.Package.PackageID,
+		PackageName:  room.Package.Name,
+		PlayersMax:   room.PlayersMax,
+		PlayersCount: len(room.Players),
+	}
+}
+
+type roomCreationResponse struct {
+	RoomID string `json:"room_id"`
+}
+
+func RoomCreationResponse(room *entity.Room) roomCreationResponse {
+	return roomCreationResponse{
+		RoomID: room.ID,
+	}
+}

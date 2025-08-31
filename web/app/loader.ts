@@ -3,9 +3,11 @@ import http from "./utils/axios";
 import { setUser } from "./store/user";
 import { store } from "./store/store";
 
-
 export default async function Loader() : Promise<User | null> {
+  const user = store.getState().user;
+  if(user) return user;
   try{
+    console.log("AA")
     var r = await http.get("/identify");
     if (!r.data) return null;
     let user = r.data;

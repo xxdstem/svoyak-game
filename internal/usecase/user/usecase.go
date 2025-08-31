@@ -1,13 +1,10 @@
-package usecase
+package user
 
 import (
 	"errors"
 	"net/http"
-	"os"
 	"svoyak/internal/entity"
-	"svoyak/internal/models"
 	"svoyak/pkg/logger"
-	"svoyak/pkg/parser"
 )
 
 var log *logger.Logger
@@ -26,23 +23,6 @@ type uc struct {
 func New(l *logger.Logger, store Store) *uc {
 	log = l
 	return &uc{store: store}
-}
-
-func (uc *uc) UnpackAndLoadPackage(user *entity.User) (*models.Package, error) {
-	uuid, err := parser.UnpackZipArchive(user.SessionID)
-	if err != nil {
-		log.Error("error unpack")
-		return nil, err
-	}
-
-	pkg, err := parser.ParseFromFile("./temp/pkg/" + uuid + "/" + "content.xml")
-	pkg.PackageID = uuid
-	if err != nil {
-		return nil, err
-	}
-	user.CurrentPackage = pkg
-	user.CurrentPackageId = pkg.PackageID
-	return pkg, nil
 }
 
 func (uc *uc) GetUser(r *http.Request) *entity.User {
@@ -70,12 +50,5 @@ func (uc *uc) Logout(r *http.Request) error {
 		return nil
 	}
 	uc.store.Del(sessionID)
-	return nil
-}
-
-func (uc *uc) AbortGame(user *entity.User) error {
-	os.RemoveAll("./temp/pkg/" + user.SessionID)
-	user.CurrentPackage = nil
-	user.CurrentPackageId = ""
 	return nil
 }
