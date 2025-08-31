@@ -7,6 +7,19 @@ type userResponse struct {
 	RoomID    string `json:"room_id"`
 	UserName  string `json:"username"`
 }
+type roomPlayerResponse struct {
+	ID        string            `json:"id"`
+	UserName  string            `json:"username"`
+	RoomStats *entity.RoomStats `json:"room_stats"`
+}
+
+func RoomPlayerResponse(user *entity.User) roomPlayerResponse {
+	return roomPlayerResponse{
+		ID:        user.SessionID,
+		RoomStats: user.RoomStats,
+		UserName:  user.UserName,
+	}
+}
 
 func UserResponse(user *entity.User) userResponse {
 	var roomID string
@@ -18,6 +31,31 @@ func UserResponse(user *entity.User) userResponse {
 		RoomID:    roomID,
 		UserName:  user.UserName,
 	}
+}
+
+type roomDetailedResponse struct {
+	ID          string               `json:"id"`
+	Name        string               `json:"name"`
+	PackageID   string               `json:"package_id"`
+	PackageName string               `json:"package_name"`
+	PlayersMax  int                  `json:"players_max"`
+	Players     []roomPlayerResponse `json:"players"`
+}
+
+func RoomDetailedResponse(room *entity.Room) roomDetailedResponse {
+	resp := roomDetailedResponse{
+		ID:          room.ID,
+		Name:        room.Name,
+		PackageID:   room.Package.PackageID,
+		PackageName: room.Package.Name,
+		PlayersMax:  room.PlayersMax,
+	}
+	players := make([]roomPlayerResponse, 0)
+	for _, player := range room.Players {
+		players = append(players, RoomPlayerResponse(player))
+	}
+	resp.Players = players
+	return resp
 }
 
 type roomResponse struct {

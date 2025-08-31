@@ -19,12 +19,12 @@ import {
   GridLegacy
 } from '@mui/material';
 
-import type { GameData, Host, Package, Player, Question, Theme } from './types';
+import type { GameData, Host, Package, Player, Question, RoomDetails, RoomPlayer, Theme } from './types';
 import { useNavigate } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { leaveRoom } from '~/store/user';
 
-export const Game: React.FC<{ package: Package }> = (props : { package: Package }) => {
+export const Game: React.FC<{ package: Package, roomData: RoomDetails }> = (props) => {
 
     const theme = useTheme();
     const dispatch = useDispatch();
@@ -34,21 +34,7 @@ export const Game: React.FC<{ package: Package }> = (props : { package: Package 
     const navigate = useNavigate();
     const [currentRound, setCurrentRound] = useState(0);
     const gameData = useMemo<GameData>(()=>rounds[currentRound], [rounds, currentRound]);
-    const [players, setPlayers] = useState <Player[]> ([{
-            id: 1,
-            name: 'Игрок 1',
-            score: 0,
-            avatar: 'P1',
-            color: theme.palette.primary.main
-        },
-        {
-            id: 2,
-            name: 'Игрок 2',
-            score: 0,
-            avatar: 'P2',
-            color: theme.palette.secondary.main
-        },
-    ]);
+    const [players, setPlayers] = useState <RoomPlayer[]> (props.roomData.players);
 
     const [host] = useState <Host> ({
         name: 'Ведущий',
@@ -98,24 +84,7 @@ export const Game: React.FC<{ package: Package }> = (props : { package: Package 
         setShowAnswer(true);
     };
 
-    const handleAddScore = (playerId: number, points: number) => {
-        if (!currentQuestion) return;
-
-        setPlayers(players.map(player =>
-            player.id === playerId ? {
-                ...player,
-                score: player.score + points
-            } : player
-        ));
-
-        setThemes(prevThemes => {
-            const newThemes = [...prevThemes];
-            newThemes[currentQuestion.themeIndex].Questions[currentQuestion.questionIndex].isAnswered = true;
-            return newThemes;
-        });
-
-        setCurrentQuestion(null);
-    };
+    
 
     const handleAbortGame = async () =>{
       if(window.confirm("Вы уверены?")){
@@ -125,26 +94,6 @@ export const Game: React.FC<{ package: Package }> = (props : { package: Package 
       }
     }
 
-    const handleAddPlayer = () => {
-        if (newPlayerName.trim() && players.length < 5) {
-            const newPlayer: Player = {
-                id: players.length + 1,
-                name: newPlayerName,
-                score: 0,
-                avatar: `P${players.length + 1}`,
-                color: playerColors[players.length - 2] || theme.palette.primary.main,
-            };
-            setPlayers([...players, newPlayer]);
-            setNewPlayerName('');
-            setOpenAddPlayer(false);
-        }
-    };
-
-    const handleRemovePlayer = (playerId: number) => {
-        if (players.length > 2) {
-            setPlayers(players.filter(player => player.id !== playerId));
-        }
-    };
 
     // Получение текста вопроса
     const getQuestionText = (question: Question) => {
@@ -318,12 +267,12 @@ export const Game: React.FC<{ package: Package }> = (props : { package: Package 
         justifyContent: 'center',
         gap: 2,
       }}>
-        {players.map(player => (
+        {players.map((player, i) => (
           <Paper key={player.id} elevation={3} sx={{ 
             padding: 2,
             minWidth: 150,
-            backgroundColor: player.color,
-            color: theme.palette.getContrastText(player.color),
+            backgroundColor: playerColors[i],
+            color: "#fff",
           }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -333,17 +282,17 @@ export const Game: React.FC<{ package: Package }> = (props : { package: Package 
                   bgcolor: 'rgba(0, 0, 0, 0.2)',
                   marginRight: 1,
                 }}>
-                  {player.avatar}
+                  ?
                 </Avatar>
-                <Typography variant="subtitle1">
-                  {player.name}
+                <Typography variant="subtitle1" color='#fff'>
+                  {player.username}
                 </Typography>
               </Box>
               {players.length > 2 && (
                 <Button 
                   size="small" 
                   color="inherit" 
-                  onClick={() => handleRemovePlayer(player.id)}
+                  onClick={() => alert("rm player")}
                   sx={{ minWidth: 24 }}
                 >
                   ×
@@ -351,7 +300,7 @@ export const Game: React.FC<{ package: Package }> = (props : { package: Package 
               )}
             </Box>
             <Typography variant="h5" align="center" sx={{ marginTop: 1 }}>
-              {player.score}
+              {player.room_stats.Points}
             </Typography>
           </Paper>
         ))}
@@ -492,7 +441,6 @@ export const Game: React.FC<{ package: Package }> = (props : { package: Package 
         <DialogActions>
           <Button onClick={() => setOpenAddPlayer(false)}>Отмена</Button>
           <Button 
-            onClick={handleAddPlayer} 
             disabled={!newPlayerName.trim()}
             variant="contained"
             color="primary"

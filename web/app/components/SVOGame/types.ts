@@ -48,4 +48,23 @@ export type Package = {
     PackageID: string;
     Rounds: GameData[];
 };
-  
+
+export type RoomStats = {
+  Role: string;
+  Points: number;
+}
+
+export type RoomPlayer = {
+  id: string;
+  username: string;
+  room_stats: RoomStats;
+}
+
+export type RoomDetails = {
+	id:          string;            
+	name:        string;             
+	package_id:   string;           
+	package_name: string;      
+	players_max:  number;
+	players:     RoomPlayer[];
+}

@@ -120,7 +120,7 @@ func (h *handler) GetRoom(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Game cannot be found", http.StatusNotFound)
 		return
 	}
-	json, err := json.Marshal(dto.RoomResponse(user.Room))
+	json, err := json.Marshal(dto.RoomDetailedResponse(user.Room))
 	if err == nil {
 		w.Write(json)
 	}
