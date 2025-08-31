@@ -34,6 +34,14 @@ func (uc *uc) CreateRoom(name string, password string) (*entity.Room, error) {
 	return &room, nil
 }
 
+func (uc *uc) GetRoom(roomID string) (*entity.Room, error) {
+	room, ok := uc.rooms[roomID]
+	if !ok {
+		return nil, errors.New("room not found")
+	}
+	return room, nil
+}
+
 func (uc *uc) JoinRoom(user *entity.User, roomID string) error {
 	room, ok := uc.rooms[roomID]
 	if !ok {

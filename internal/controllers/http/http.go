@@ -30,6 +30,7 @@ type RoomUseCase interface {
 	JoinRoom(user *entity.User, roomID string) error
 	UnpackAndLoadPackage(filename string) (*models.Package, error)
 	ListRooms() []*entity.Room
+	GetRoom(roomID string) (*entity.Room, error)
 	AbortRoom(room *entity.Room) error
 }
 
@@ -53,6 +54,7 @@ func (h *handler) Register(router *mux.Router) {
 	router.HandleFunc("/identify", h.SetIdentify).Methods("PUT")
 	router.HandleFunc("/logout", h.Logout).Methods("POST")
 	router.HandleFunc("/rooms/list", h.ListRooms)
+	router.HandleFunc("/rooms/join", h.JoinRoom).Methods("POST")
 	router.HandleFunc("/rooms/get", h.GetRoom)
 	router.HandleFunc("/game/create", h.CreateGame).Methods("POST")
 	router.HandleFunc("/game/gamedata", h.GameData)
@@ -139,6 +141,32 @@ func (h *handler) GameData(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		w.Write(json)
 	}
+}
+
+func (h *handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
+	user := h.uuc.GetUser(r)
+	if user == nil {
+		http.Error(w, "Non authorized", http.StatusUnauthorized)
+		return
+	}
+	if user.Room != nil {
+		http.Error(w, "Room already taken", http.StatusBadRequest)
+		return
+	}
+	id := r.FormValue("room_id")
+	password := r.FormValue("password")
+	room, err := h.ruc.GetRoom(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if room.Password != "" && room.Password != password {
+		http.Error(w, "Wrong password!", http.StatusUnauthorized)
+		return
+	}
+	h.ruc.JoinRoom(user, id)
+	j, _ := json.Marshal(dto.RoomCreationResponse(room))
+	w.Write(j)
 }
 
 func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
