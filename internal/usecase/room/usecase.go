@@ -63,6 +63,7 @@ func (uc *uc) LeaveRoom(user *entity.User) error {
 	user.Room = nil
 	user.RoomStats = nil
 	if len(room.Players) == 0 {
+		log.Info("Aborting room!")
 		uc.AbortRoom(room)
 	}
 	return nil
@@ -98,7 +99,7 @@ func (uc *uc) AbortRoom(room *entity.Room) error {
 		}
 	}
 	delete(uc.rooms, room.ID)
-	room = nil
 	os.RemoveAll("./temp/pkg/" + room.Package.PackageID)
+	room = nil
 	return nil
 }
