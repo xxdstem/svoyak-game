@@ -24,7 +24,6 @@ const Header = () => {
     boxShadow: 'none',
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.primary.main : theme.palette.background.paper,
     justifyContent: 'center',
-    backdropFilter: 'blur(4px)',
     opacity: 0.8,
     [theme.breakpoints.up('lg')]: {
       minHeight: '70px',

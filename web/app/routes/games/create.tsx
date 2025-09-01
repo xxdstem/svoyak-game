@@ -93,7 +93,7 @@ export default function App (){
             sx={{ mb: 2 }}
             inputProps={{ min: 2, max: 20 }}
           />
-          <Button type="submit" variant="contained" color="success" fullWidth sx={{ py: 1.5, fontSize: 18 }}>
+          <Button disabled={!name || !selectedFile} type="submit" variant="contained" color="success" fullWidth sx={{ py: 1.5, fontSize: 18 }}>
             Создать игру
           </Button>
         </form>
