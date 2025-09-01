@@ -414,40 +414,6 @@ export const Game: React.FC<{ package: Package, roomData: RoomDetails }> = (prop
         </Dialog>
       )}
       
-      {/* Диалог добавления игрока */}
-      <Dialog 
-        open={openAddPlayer} 
-        onClose={() => setOpenAddPlayer(false)}
-        PaperProps={{
-          sx: {
-            backgroundColor: theme.palette.background.paper,
-          }
-        }}
-      >
-        <DialogTitle>Добавить нового игрока</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Имя игрока"
-            fullWidth
-            variant="outlined"
-            value={newPlayerName}
-            onChange={(e) => setNewPlayerName(e.target.value)}
-            sx={{ marginTop: 1 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenAddPlayer(false)}>Отмена</Button>
-          <Button 
-            disabled={!newPlayerName.trim()}
-            variant="contained"
-            color="primary"
-          >
-            Добавить
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };
