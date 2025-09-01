@@ -228,6 +228,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
           maxWidth="md"
           fullWidth
           slotProps={{
+            backdrop:{sx:{backdropFilter:"blur(4px)"}},
             paper:{
               sx: {
                 backgroundColor: theme.palette.background.paper,

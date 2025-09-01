@@ -66,7 +66,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
                 <img 
                 src={`http://localhost:8080/files/${gameData.PackageID}/Images/${media.Content}`}
                 alt="Question media" 
-                style={{ maxWidth: '100%', maxHeight: '300px' }} 
+                style={{ maxWidth: '100%', maxHeight: '80%' }} 
                 />
             </Box>
             )}
