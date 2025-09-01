@@ -68,3 +68,9 @@ export type RoomDetails = {
 	players_max:  number;
 	players:     RoomPlayer[];
 }
+
+
+export type CurrentQuestion ={
+    themeIndex: number;
+    questionIndex: number;
+}

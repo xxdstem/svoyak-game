@@ -1,3 +1,5 @@
+import type { Package } from "./components/SVOGame/types";
+
 export type User = {
     username: string;
     session_id: string;
@@ -16,4 +18,5 @@ export type Room = {
 
 export type StoreState = {
     user: User | null;
+    game: Package | null;
 }

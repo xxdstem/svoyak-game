@@ -9,59 +9,54 @@ import {
   Avatar,
   Button,
   Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Divider,
   Paper,
   useTheme
 } from '@mui/material';
 
-import type { GameData, Host, Package, Player, Question, RoomDetails, RoomPlayer, Theme } from './types';
+import type { CurrentQuestion, GameData, Host, Package, RoomDetails, RoomPlayer } from './types';
 import { useNavigate } from 'react-router';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { leaveRoom } from '~/store/user';
+import { QuestionDialog } from './QustionDialog';
+import { $game } from '~/store/game';
 
-export const Game: React.FC<{ package: Package, roomData: RoomDetails }> = (props) => {
+export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
+    const pkg = useSelector($game);
+    if(!pkg) return null;
+    const rounds: GameData[] = pkg.Rounds;
 
     const theme = useTheme();
     const dispatch = useDispatch();
-
-    const pkg: Package = props.package;
-    const rounds: GameData[] = pkg.Rounds;
     const navigate = useNavigate();
+    
     const [currentRound, setCurrentRound] = useState(0);
     const gameData = useMemo<GameData>(()=>rounds[currentRound], [rounds, currentRound]);
     const [players, setPlayers] = useState <RoomPlayer[]> (props.roomData.players);
-
+    
     const [host] = useState <Host> ({
-        name: 'Ведущий',
-        avatar: 'H',
+      name: 'Ведущий',
+      avatar: 'H',
     });
-
+    
+    
     const [themes, setThemes] = useState(()=>gameData.Themes.map(theme => ({
         ...theme,
         Questions: theme.Questions.map(question => ({
-            ...question,
-            isAnswered: false
+            ...question
         }))
     })))
 
-    const [currentQuestion, setCurrentQuestion] = useState < {
-        themeIndex: number,
-        questionIndex: number
-    } | null > (null);
+    const [currentQuestion, setCurrentQuestion] = useState < CurrentQuestion | null > (null);
     const [showAnswer, setShowAnswer] = useState(false);
-    const [openAddPlayer, setOpenAddPlayer] = useState(false);
-    const [newPlayerName, setNewPlayerName] = useState('');
-
+    
+    
     // Цвета для новых игроков
     const playerColors = [
-        "#2cf",
-        "#f6a",
-        theme.palette.warning.main,
-        theme.palette.error.main
+      "#2cf",
+      "#f6a",
+      theme.palette.warning.main,
+      theme.palette.error.main
     ];
 
     // Обработчики событий
@@ -83,46 +78,13 @@ export const Game: React.FC<{ package: Package, roomData: RoomDetails }> = (prop
         setShowAnswer(true);
     };
 
-    
-
     const handleAbortGame = async () =>{
       if(window.confirm("Вы уверены?")){
         var r = await http.get("/game/abort");
         dispatch(leaveRoom())
         navigate("/")
       }
-    }
-
-
-    // Получение текста вопроса
-    const getQuestionText = (question: Question) => {
-        const questionParams = question.Params.find(p => p.Name === 'question');
-        if (!questionParams) return '';
-
-        // Ищем текстовый контент (не изображения/аудио)
-        const textItems = questionParams.Items.filter(item =>
-            !['image', 'audio'].includes(item.Type) &&
-            item.Placement !== 'replic' &&
-            item.Content.trim()
-        );
-
-        return textItems.map(item => item.Content).join('\n');
-    };
-
-    // Получение ответа
-    const getAnswerText = (question: Question) => {
-        return question.Right.Answers.join(' или ');
-    };
-
-    // Получение медиа (изображения/аудио) вопроса
-    const getQuestionMedia = (question: Question) => {
-        const questionParams = question.Params.find(p => p.Name === 'question');
-        if (!questionParams) return null;
-
-        return questionParams.Items.find(item => ['image', 'audio'].includes(item.Type));
-    };
-
-    
+    }  
 
   return (
     <Box sx={{ 
@@ -312,105 +274,15 @@ export const Game: React.FC<{ package: Package, roomData: RoomDetails }> = (prop
           onClose={handleCloseQuestion}
           maxWidth="md"
           fullWidth
-          PaperProps={{
-            sx: {
-              backgroundColor: theme.palette.background.paper,
+          slotProps={{
+            paper:{
+              sx: {
+                backgroundColor: theme.palette.background.paper,
+              }
             }
           }}
         >
-          {(() => {
-            const gameTheme = themes[currentQuestion.themeIndex];
-            const question = gameTheme.Questions[currentQuestion.questionIndex];
-            const questionText = getQuestionText(question);
-            const answerText = getAnswerText(question);
-            const media = getQuestionMedia(question);
-            
-            return (
-              <>
-                <DialogTitle sx={{ 
-                  backgroundColor: theme.palette.primary.dark, 
-                  color: theme.palette.text.primary 
-                }}>
-                  {gameTheme.Name} за {question.Price}
-                </DialogTitle>
-                <DialogContent sx={{ padding: 4 }}>
-                  {media?.Type === 'image' && (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: 2 }}>
-                      <img 
-                        src={`http://localhost:8080/files/${pkg.PackageID}/Images/${media.Content}`}
-                        alt="Question media" 
-                        style={{ maxWidth: '100%', maxHeight: '300px' }} 
-                      />
-                    </Box>
-                  )}
-                  
-                  {media?.Type === 'audio' && (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: 2 }}>
-                      <audio controls autoPlay>
-                        <source src={`http://localhost:8080/files/${pkg.PackageID}/Audio/${media.Content}`} type="audio/mpeg" />
-                        Ваш браузер не поддерживает аудио элемент.
-                      </audio>
-                    </Box>
-                  )}
-                  
-                  {questionText && (
-                    <Typography variant="h5" gutterBottom>
-                      {questionText}
-                    </Typography>
-                  )}
-                  
-                  {showAnswer && (
-                    <>
-                      <Divider sx={{ marginY: 3 }} />
-                      <Typography variant="h6" color="primary">
-                        Ответ:
-                      </Typography>
-                      <Typography variant="h5">
-                        {answerText}
-                      </Typography>
-                    </>
-                  )}
-                </DialogContent>
-                <DialogActions sx={{ 
-                  justifyContent: 'space-between', 
-                  padding: 2,
-                  backgroundColor: theme.palette.background.default,
-                }}>
-                  <Box>
-                    {!showAnswer && (
-                      <Button 
-                        onClick={handleShowAnswer} 
-                        color="primary" 
-                        variant="contained"
-                      >
-                        Показать ответ
-                      </Button>
-                    )}
-                  </Box>
-                  
-                  {/* <Box sx={{ display: 'flex', gap: 1 }}>
-                    {players.map(player => (
-                      <Button
-                        key={player.id}
-                        onClick={() => handleAddScore(player.id, question.Price)}
-                        variant="contained"
-                        sx={{ 
-                          backgroundColor: player.color,
-                          color: theme.palette.getContrastText(player.color),
-                          '&:hover': {
-                            backgroundColor: player.color,
-                            opacity: 0.9,
-                          },
-                        }}
-                      >
-                        {player.name} (+{question.Price})
-                      </Button>
-                    ))}
-                  </Box> */}
-                </DialogActions>
-              </>
-            );
-          })()}
+          <QuestionDialog themes={themes} showAnswer={showAnswer} currentQuestion={currentQuestion} handleShowAnswer={handleShowAnswer} />
         </Dialog>
       )}
       
