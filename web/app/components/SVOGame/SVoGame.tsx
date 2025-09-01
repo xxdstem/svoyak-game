@@ -43,15 +43,14 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
     });
     
     
-    const [themes, setThemes] = useState(()=>gameData.Themes.map(theme => ({
+    const themes = useMemo(()=>gameData.Themes.map(theme => ({
         ...theme,
         Questions: theme.Questions.map(question => ({
             ...question
         }))
-    })))
+    })),[gameData])
 
     const [currentQuestion, setCurrentQuestion] = useState < CurrentQuestion | null > (null);
-    const [showAnswer, setShowAnswer] = useState(false);
     // Обработчики событий
     const handleQuestionClick = (themeIndex: number, questionIndex: number) => {
         if (!themes[themeIndex].Questions[questionIndex].isAnswered) {
@@ -60,7 +59,6 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
                 themeIndex,
                 questionIndex
             });
-            setShowAnswer(false);
         }
     };
 
@@ -74,10 +72,6 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
           nextRound();
         }
     }, [themes]);
-
-    const handleShowAnswer = () => {
-        setShowAnswer(true);
-    };
 
     const handleAbortGame = async () =>{
       if(window.confirm("Вы уверены?")){
@@ -148,7 +142,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
             </Typography>
             
             {/* Общий контейнер для всех тем с вопросами */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, paddingBottom: "150px" }}>
               {themes.map((gameTheme, themeIndex) => (
                 <Box 
                   key={themeIndex}
@@ -187,7 +181,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
                           sx={{ 
                             cursor: question.isAnswered ? 'default' : 'pointer',
                             backgroundColor: question.isAnswered 
-                              ? theme.palette.grey[600] 
+                              ? theme.palette.grey[100] 
                               : theme.palette.primary.dark,
                             color: theme.palette.text.primary,
                             height: 80,
@@ -197,7 +191,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
                             justifyContent: 'center',
                             '&:hover': {
                               backgroundColor: question.isAnswered 
-                                ? theme.palette.grey[600] 
+                                ? theme.palette.grey[100] 
                                 : theme.palette.primary.main,
                             },
                           }}
@@ -236,7 +230,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
             }
           }}
         >
-          <QuestionDialog themes={themes} showAnswer={showAnswer} currentQuestion={currentQuestion} handleShowAnswer={handleShowAnswer} />
+          <QuestionDialog themes={themes}  currentQuestion={currentQuestion} />
         </Dialog>
       )}
       
