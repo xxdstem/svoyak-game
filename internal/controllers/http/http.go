@@ -189,7 +189,7 @@ func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 	uuid := uuid.New().String()
-	err = os.MkdirAll("./temp/pkg/"+uuid, os.ModePerm|os.ModeSticky)
+	err = os.MkdirAll("./temp", os.ModePerm|os.ModeSticky)
 	if err != nil {
 		log.Error(err)
 	}
@@ -199,6 +199,7 @@ func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer dst.Close()
+	defer os.Remove("./temp/" + uuid + ".siq")
 
 	if _, err := io.Copy(dst, file); err != nil {
 		http.Error(w, "Error saving file", http.StatusInternalServerError)
