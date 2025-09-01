@@ -1,5 +1,5 @@
 import { Button, TextField, Paper, Box, Typography } from "@mui/material";
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
 import { joinRoom } from "~/store/user";
@@ -20,6 +20,12 @@ export default function App (){
     if (!file) return;
     setSelectedFile(file);
   };
+
+  const trimFileName = (name: string) =>{
+    name = name.split(".siq")[0]
+    if (name.length < 16) return name;
+    return `${name.slice(0, 14)}...`
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -44,7 +50,7 @@ export default function App (){
   };
 
   return (
-    <Box sx={{ maxWidth: 400, mx: 'auto', mt: 6 }}>
+    <Box sx={{ maxWidth: 420, mx: 'auto', mt: 6 }}>
       <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
         <Typography variant="h5" align="center" gutterBottom>Создать игру</Typography>
         <form onSubmit={handleSubmit}>
@@ -56,10 +62,11 @@ export default function App (){
             style={{ display: 'none' }}
           />
           <Button variant="contained" color="primary"
+            style={{textTransform:"none"}}
             onClick={() => fileInputRef.current!.click()} disableElevation
             fullWidth sx={{ py: 1.5, fontSize: 18, mb: 2 }}
           >
-            {selectedFile ? `Файл выбран: ${selectedFile.name}` : "Выбрать пакет .siq"}
+            {selectedFile ? `Файл выбран: ${trimFileName(selectedFile.name)}` : "Выбрать пакет"}
           </Button>
           <TextField
             label="Название игры"

@@ -51,7 +51,7 @@ export default function Home() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Button variant="contained" color="primary" onClick={() => navigate('/games/create')} disableElevation fullWidth sx={{ py: 1.5, fontSize: 18 }}>Создать игру</Button>
               <Button variant="contained" color="primary" onClick={() => navigate('/games/list')} fullWidth sx={{ py: 1.5, fontSize: 18 }}>Присоединиться к игре</Button>
-              <Button variant="contained" color="primary" onClick={() => navigate('/packs')} fullWidth sx={{ py: 1.5, fontSize: 18 }}>Скачать паки</Button>
+              <Button variant="contained" color="primary" onClick={() => window.location.replace("https://www.sibrowser.ru")} fullWidth sx={{ py: 1.5, fontSize: 18 }}>Скачать паки</Button>
             </Box>
           </Paper>
         </Box>
