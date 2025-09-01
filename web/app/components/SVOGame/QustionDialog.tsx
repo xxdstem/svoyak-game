@@ -11,10 +11,9 @@ type Props = {
 }
 
 export const QuestionDialog: React.FC<Props> = (props) => {
+    const { handleShowAnswer, showAnswer, themes, currentQuestion  } = props;
 
     const gameData = useSelector($game);
-
-    const { handleShowAnswer, showAnswer, themes, currentQuestion  } = props;
     const theme = useTheme();
 
     // Получение текста вопроса

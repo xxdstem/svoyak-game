@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import http from '~/utils/axios';
 import {
   Box,
@@ -20,9 +20,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { leaveRoom } from '~/store/user';
 import { QuestionDialog } from './QustionDialog';
 import { $game } from '~/store/game';
+import { Players } from './Players';
 
 export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
     const pkg = useSelector($game);
+    
+
     if(!pkg) return null;
     const rounds: GameData[] = pkg.Rounds;
 
@@ -49,19 +52,10 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
 
     const [currentQuestion, setCurrentQuestion] = useState < CurrentQuestion | null > (null);
     const [showAnswer, setShowAnswer] = useState(false);
-    
-    
-    // Цвета для новых игроков
-    const playerColors = [
-      "#2cf",
-      "#f6a",
-      theme.palette.warning.main,
-      theme.palette.error.main
-    ];
-
     // Обработчики событий
     const handleQuestionClick = (themeIndex: number, questionIndex: number) => {
         if (!themes[themeIndex].Questions[questionIndex].isAnswered) {
+          themes[themeIndex].Questions[questionIndex].isAnswered = true;
             setCurrentQuestion({
                 themeIndex,
                 questionIndex
@@ -70,9 +64,16 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
         }
     };
 
-    const handleCloseQuestion = () => {
-        setCurrentQuestion(null);
+    const nextRound = () => {
+      setCurrentRound(s => s + 1)
     };
+
+    const handleCloseQuestion = useCallback(() => {
+        setCurrentQuestion(null);
+        if(themes.every(t => t.Questions.every(q => q.isAnswered))){
+          nextRound();
+        }
+    }, [themes]);
 
     const handleShowAnswer = () => {
         setShowAnswer(true);
@@ -96,7 +97,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
       {/* Основная сетка */}
       <Grid container spacing={2} sx={{ height: '100%'}}>
         {/* Колонка ведущего */}
-        <Grid size={2}>
+        <Grid size={1.5}>
           <Paper elevation={3} sx={{ 
             height: '100%', 
             padding: 2,
@@ -135,7 +136,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
         </Grid>
         
         {/* Центральная колонка с вопросами */}
-        <Grid size={8} sx={{ flexGrow: 1 }}>
+        <Grid size={10} sx={{ flexGrow: 1 }}>
           <Box sx={{ 
             height: '100%', 
             display: 'flex',
@@ -217,55 +218,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
       </Grid>
       
       {/* Панель игроков внизу */}
-      <Box sx={{ 
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: theme.palette.background.paper,
-        padding: 2,
-        display: 'flex',
-        justifyContent: 'center',
-        gap: 2,
-      }}>
-        {players.map((player, i) => (
-          <Paper key={player.id} elevation={3} sx={{ 
-            padding: 2,
-            minWidth: 150,
-            backgroundColor: playerColors[i],
-            color: "#fff",
-          }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Avatar sx={{ 
-                  width: 40, 
-                  height: 40, 
-                  bgcolor: 'rgba(0, 0, 0, 0.2)',
-                  marginRight: 1,
-                }}>
-                  ?
-                </Avatar>
-                <Typography variant="subtitle1" color='#fff'>
-                  {player.username}
-                </Typography>
-              </Box>
-              {players.length > 2 && (
-                <Button 
-                  size="small" 
-                  color="inherit" 
-                  onClick={() => alert("rm player")}
-                  sx={{ minWidth: 24 }}
-                >
-                  ×
-                </Button>
-              )}
-            </Box>
-            <Typography variant="h5" align="center" sx={{ marginTop: 1 }}>
-              {player.room_stats.Points}
-            </Typography>
-          </Paper>
-        ))}
-      </Box>
+      <Players players={players}/>
       
       {/* Диалог вопроса */}
       {currentQuestion && (
