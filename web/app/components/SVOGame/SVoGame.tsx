@@ -15,8 +15,7 @@ import {
   TextField,
   Divider,
   Paper,
-  useTheme,
-  GridLegacy
+  useTheme
 } from '@mui/material';
 
 import type { GameData, Host, Package, Player, Question, RoomDetails, RoomPlayer, Theme } from './types';
@@ -135,7 +134,7 @@ export const Game: React.FC<{ package: Package, roomData: RoomDetails }> = (prop
       {/* Основная сетка */}
       <Grid container spacing={2} sx={{ height: '100%'}}>
         {/* Колонка ведущего */}
-        <GridLegacy item xs={2}>
+        <Grid size={2}>
           <Paper elevation={3} sx={{ 
             height: '100%', 
             padding: 2,
@@ -171,10 +170,10 @@ export const Game: React.FC<{ package: Package, roomData: RoomDetails }> = (prop
               Завершить игру
             </Button>
           </Paper>
-        </GridLegacy>
+        </Grid>
         
         {/* Центральная колонка с вопросами */}
-        <GridLegacy item xs={8} sx={{ flexGrow: 1 }}>
+        <Grid size={8} sx={{ flexGrow: 1 }}>
           <Box sx={{ 
             height: '100%', 
             display: 'flex',
@@ -252,7 +251,7 @@ export const Game: React.FC<{ package: Package, roomData: RoomDetails }> = (prop
               ))}
             </Box>
           </Box>
-        </GridLegacy>
+        </Grid>
       </Grid>
       
       {/* Панель игроков внизу */}
