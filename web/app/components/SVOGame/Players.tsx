@@ -11,7 +11,6 @@ type Props = {
 export const Players: React.FC<Props> = (props) => {
     const { players } = props;
 
-    const gameData = useSelector($game);
     const user = useSelector($currentUser);
     const theme = useTheme();
 

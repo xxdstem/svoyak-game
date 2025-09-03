@@ -21,6 +21,7 @@ import { leaveRoom } from '~/store/user';
 import { QuestionDialog } from './QustionDialog';
 import { $game } from '~/store/game';
 import { Players } from './Players';
+import { HostBar } from './HostBar';
 
 export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
     const pkg = useSelector($game);
@@ -30,18 +31,10 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
     const rounds: GameData[] = pkg.Rounds;
 
     const theme = useTheme();
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
     
     const [currentRound, setCurrentRound] = useState(0);
     const gameData = useMemo<GameData>(()=>rounds[currentRound], [rounds, currentRound]);
     const [players, setPlayers] = useState <RoomPlayer[]> (props.roomData.players);
-    
-    const [host] = useState <Host> ({
-      name: 'Ведущий',
-      avatar: 'H',
-    });
-    
     
     const themes = useMemo(()=>gameData.Themes.map(theme => ({
         ...theme,
@@ -72,14 +65,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
           nextRound();
         }
     }, [themes]);
-
-    const handleAbortGame = async () =>{
-      if(window.confirm("Вы уверены?")){
-        var r = await http.get("/game/abort");
-        dispatch(leaveRoom())
-        navigate("/")
-      }
-    }  
+  
 
   return (
     <Box sx={{ 
@@ -92,41 +78,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
       <Grid container spacing={2} sx={{ height: '100%'}}>
         {/* Колонка ведущего */}
         <Grid size={1.5}>
-          <Paper elevation={3} sx={{ 
-            height: '100%', 
-            padding: 2,
-            backgroundColor: theme.palette.background.paper,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}>
-            <Avatar sx={{ 
-              width: 80, 
-              height: 80, 
-              bgcolor: theme.palette.primary.dark, 
-              fontSize: '2rem',
-              marginBottom: 2,
-            }}>
-              {host.avatar}
-            </Avatar>
-            <Typography variant="h6" gutterBottom>
-              {host.name}
-            </Typography>
-            <Divider sx={{ width: '100%', marginY: 2 }} />
-            
-            <Typography variant="subtitle1" gutterBottom>
-              Управление игрой
-            </Typography>
-            <Button 
-              variant="contained" 
-              color="error" 
-              onClick={() => handleAbortGame()}
-              disabled={players.length >= 5}
-              sx={{ marginBottom: 2 }}
-            >
-              Завершить игру
-            </Button>
-          </Paper>
+          <HostBar players={players}/>
         </Grid>
         
         {/* Центральная колонка с вопросами */}
@@ -149,7 +101,6 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
                   sx={{ 
                     display: 'flex', 
                     flexDirection: 'row', 
-                    alignItems: 'flex-start',
                     gap: 1,
                   }}
                 >
@@ -157,8 +108,8 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
                   <Card sx={{ 
                     backgroundColor: theme.palette.primary.light,
                     color: theme.palette.text.primary,
-                    minWidth: 200, // Фиксированная ширина для темы
-                    height: 80, // Такая же высота, как у вопросов
+                    width: 200, // Фиксированная ширина для темы
+                    minHeight: 80, // Такая же высота, как у вопросов
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -184,7 +135,6 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
                               ? theme.palette.grey[100] 
                               : theme.palette.primary.dark,
                             color: theme.palette.text.primary,
-                            height: 80,
                             width: 100, // Фиксированная ширина вопросов
                             display: 'flex',
                             alignItems: 'center',
