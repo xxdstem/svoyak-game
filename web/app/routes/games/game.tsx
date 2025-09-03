@@ -10,22 +10,25 @@ export default function App (){
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-
-  const [roomData, setRoomData] = useState<RoomDetails>();
+  const [isLoading, setLoading] = useState(true)
 
   useEffect(()=>{
     http.get("/game/gamedata").then((r)=>{
       var resp : Package = r.data;
-      dispatch(setGameData(resp))
-      http.get("/rooms/get").then(r=>setRoomData(r.data));
-    }).catch((err)=>{
+      
+      http.get("/rooms/get").then(r=>{
+        dispatch(setGameData({...resp, ...r.data}))
+        setLoading(false);
+      })
+      }).catch((err)=>{
       if(err.response.status == 404){
         navigate("/404")
       }
     })
+    
   },[])
-  if (!roomData){
+  if (isLoading){
     return <> Loading. . . .</>
   }
-  return <Game roomData={roomData}/>
+  return <Game/>
 }

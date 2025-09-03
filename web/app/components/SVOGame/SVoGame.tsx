@@ -1,40 +1,32 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import http from '~/utils/axios';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Box,
   Grid,
   Card,
   CardContent,
   Typography,
-  Avatar,
-  Button,
   Dialog,
-  Divider,
-  Paper,
   useTheme
 } from '@mui/material';
 
-import type { CurrentQuestion, GameData, Host, Package, RoomDetails, RoomPlayer } from './types';
-import { useNavigate } from 'react-router';
-import { useDispatch, useSelector } from 'react-redux';
-import { leaveRoom } from '~/store/user';
+import type { CurrentQuestion, GameData} from './types';
+
 import { QuestionDialog } from './QustionDialog';
 import { $game } from '~/store/game';
 import { Players } from './Players';
 import { HostBar } from './HostBar';
+import { useSelector } from 'react-redux';
 
-export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
+export const Game: React.FC = () => {
     const pkg = useSelector($game);
-    
-
     if(!pkg) return null;
+
     const rounds: GameData[] = pkg.Rounds;
 
     const theme = useTheme();
     
     const [currentRound, setCurrentRound] = useState(0);
     const gameData = useMemo<GameData>(()=>rounds[currentRound], [rounds, currentRound]);
-    const [players, setPlayers] = useState <RoomPlayer[]> (props.roomData.players);
     
     const themes = useMemo(()=>gameData.Themes.map(theme => ({
         ...theme,
@@ -44,7 +36,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
     })),[gameData])
 
     const [currentQuestion, setCurrentQuestion] = useState < CurrentQuestion | null > (null);
-    // Обработчики событий
+
     const handleQuestionClick = (themeIndex: number, questionIndex: number) => {
         if (!themes[themeIndex].Questions[questionIndex].isAnswered) {
           themes[themeIndex].Questions[questionIndex].isAnswered = true;
@@ -77,12 +69,12 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
       {/* Основная сетка */}
       <Grid container spacing={2} sx={{ height: '100%'}}>
         {/* Колонка ведущего */}
-        <Grid size={1.5}>
-          <HostBar players={players}/>
+        <Grid minWidth={200} size={2}>
+          <HostBar/>
         </Grid>
         
         {/* Центральная колонка с вопросами */}
-        <Grid size={10} sx={{ flexGrow: 1 }}>
+        <Grid  sx={{ flexGrow: 1 }}>
           <Box sx={{ 
             height: '100%', 
             display: 'flex',
@@ -162,7 +154,7 @@ export const Game: React.FC<{ roomData: RoomDetails }> = (props) => {
       </Grid>
       
       {/* Панель игроков внизу */}
-      <Players players={players}/>
+      <Players/>
       
       {/* Диалог вопроса */}
       {currentQuestion && (

@@ -1,20 +1,20 @@
 import { Avatar, Box, Button, Paper, Typography, useTheme } from "@mui/material"
-import { useSelector } from "react-redux";
-import { $game } from "~/store/game";
+import { useDispatch, useSelector } from "react-redux";
+import { $game, setRoleForUser } from "~/store/game";
 import type { RoomPlayer } from "./types";
 import { useMemo } from "react";
 import { $currentUser } from "~/store/user";
 
-type Props = {
-    players: RoomPlayer[]
-}
-export const Players: React.FC<Props> = (props) => {
-    const { players } = props;
+
+export const Players: React.FC = () => {
+    
+    const theme = useTheme();
+    const dispatch = useDispatch();
 
     const user = useSelector($currentUser);
-    const theme = useTheme();
+    const game = useSelector($game);
 
-    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>players.find(p=>p.id == user?.session_id), [players]);
+    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>game?.players.find(p=>p.id == user?.session_id), [game]);
     
     const playerColors = [
       "#2cf",
@@ -22,6 +22,13 @@ export const Players: React.FC<Props> = (props) => {
       theme.palette.warning.main,
       theme.palette.error.main
     ];
+
+    const joinAsUser = async () => {
+        var f = new FormData();
+        f.append("role", "host")
+        //await http.post("/game/set_role", f);
+        dispatch(setRoleForUser({user_id: user?.session_id, role: "player"}))
+    }
 
     return <Box sx={{ 
         position: 'fixed',
@@ -35,9 +42,7 @@ export const Players: React.FC<Props> = (props) => {
         gap: 2,
       }}>
         {currentPlayer?.room_stats.Role == "" && (
-            <Paper key={-1} onClick={(()=>{
-                
-            })}
+            <Paper key={-1} onClick={joinAsUser}
             elevation={3} sx={{ 
             padding: 2,
             minWidth: 150,
@@ -63,7 +68,7 @@ export const Players: React.FC<Props> = (props) => {
             </Box>
           </Paper>
         )}
-        {players.map((player, i) => player.room_stats.Role == "" ? null : (
+        {game?.players.map((player, i) => player.room_stats.Role == "player" ? (
           <Paper key={player.id} elevation={3} sx={{ 
             padding: 2,
             minWidth: 150,
@@ -71,32 +76,24 @@ export const Players: React.FC<Props> = (props) => {
             color: "#fff",
           }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', flexDirection:"column", alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', flexDirection:"row", alignItems: 'center' }}>
                 <Avatar sx={{ 
                   width: 40, 
                   height: 40, 
                   bgcolor: 'rgba(0, 0, 0, 0.2)',
-                  marginBottom: 1,
+                  marginRight: 2,
                 }}>
                   ?
                 </Avatar>
-                <Typography variant="subtitle1" color='#fff'>
+                <Typography variant="h6" color='#fff'>
                   {player.username}
                 </Typography>
               </Box>
-                <Button 
-                  size="small" 
-                  color="inherit" 
-                  onClick={() => alert("rm player")}
-                  sx={{ minWidth: 24 }}
-                >
-                  ×
-                </Button>
             </Box>
-            <Typography variant="h5" align="center" sx={{ marginTop: 1 }}>
+            <Typography variant="h4" align="center" sx={{ marginTop: 1 }}>
               {player.room_stats.Points}
             </Typography>
           </Paper>
-        ))}
+        ): null)}
       </Box>
 }

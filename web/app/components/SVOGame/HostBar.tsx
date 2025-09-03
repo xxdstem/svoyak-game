@@ -1,29 +1,37 @@
 import { Avatar, Box, Button, Divider, Paper, Typography, useTheme } from "@mui/material"
 import type { RoomPlayer } from "./types"
 import { useMemo } from "react"
-import { useDispatch } from "react-redux"
-import { leaveRoom } from "~/store/user"
+import { useDispatch, useSelector } from "react-redux"
+import { $currentUser, leaveRoom } from "~/store/user"
 import { useNavigate } from "react-router"
 import http from "~/utils/axios"
+import { $game, setRoleForUser } from "~/store/game"
 
-type Props = {
-    players: RoomPlayer[]
-}
-export const HostBar: React.FC<Props> = (props) => {
-    const { players } = props;
-
+export const HostBar: React.FC = () => {
+    
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const theme = useTheme();
 
-    const host = useMemo<RoomPlayer | null>(()=> players.find(p=>p.room_stats.Role == "host") ?? null, [players]);
+    const game = useSelector($game);
+    const user = useSelector($currentUser);
+
+    const host = useMemo<RoomPlayer | undefined>(()=> game?.players.find(p=>p.room_stats.Role == "host"), [game]);
+    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>game?.players.find(p=>p.id == user?.session_id), [game]);
     
     const handleAbortGame = async () =>{
       if(window.confirm("Вы уверены?")){
-        var r = await http.get("/game/abort");
+        await http.get("/game/abort");
         dispatch(leaveRoom())
         navigate("/")
       }
+    }
+
+    const joinAsHost = async () => {
+        var f = new FormData();
+        f.append("role", "host")
+        //await http.post("/game/set_role", f);
+        dispatch(setRoleForUser({user_id: user?.session_id, role: "host"}))
     }
 
     return <Paper elevation={3} sx={{ 
@@ -47,9 +55,7 @@ export const HostBar: React.FC<Props> = (props) => {
               <Typography variant="h6" gutterBottom>
                 {host.username}
               </Typography></>
-              : <Paper key={-1} onClick={(()=>{
-                
-                })}
+              : currentPlayer?.room_stats.Role == "" ?  <Paper key={-1} onClick={joinAsHost}
                 elevation={3} sx={{ 
                 padding: 2,
                 minWidth: 150,
@@ -73,7 +79,7 @@ export const HostBar: React.FC<Props> = (props) => {
                   </Box>
                 </Box>
               </Paper>
-            }
+            : <>waiting for host lol</>}
             
             <Divider sx={{ width: '100%', marginY: 2 }} />
             
@@ -84,7 +90,6 @@ export const HostBar: React.FC<Props> = (props) => {
               variant="contained" 
               color="error" 
               onClick={() => handleAbortGame()}
-              disabled={players.length >= 5}
               sx={{ marginBottom: 2 }}
             >
               Покинуть игру
