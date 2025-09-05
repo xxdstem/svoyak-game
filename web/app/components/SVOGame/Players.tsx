@@ -36,7 +36,7 @@ export const Players: React.FC = () => {
           
         //dispatch(setRoleForUser({user_id: user?.session_id, role: "player"}))
     }
-
+    
     return <Box sx={{ 
         position: 'fixed',
         bottom: 0,
@@ -75,32 +75,34 @@ export const Players: React.FC = () => {
             </Box>
           </Paper>
         )}
-        {room?.players.map((player, i) => player.room_stats.Role == "player" ? (
-          <Paper key={player.id} elevation={3} sx={{ 
-            padding: 2,
-            minWidth: 150,
-            backgroundColor: playerColors[i],
-            color: "#fff",
-          }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', flexDirection:"row", alignItems: 'center' }}>
-                <Avatar sx={{ 
-                  width: 40, 
-                  height: 40, 
-                  bgcolor: 'rgba(0, 0, 0, 0.2)',
-                  marginRight: 2,
-                }}>
-                  ?
-                </Avatar>
-                <Typography variant="h6" color='#fff'>
-                  {player.username}
-                </Typography>
+        {room?.players
+          .filter(player => player.room_stats.Role == "player")
+          .map((player, i) =>
+            <Paper key={player.id} elevation={3} sx={{ 
+              padding: 2,
+              minWidth: 150,
+              backgroundColor: playerColors[i],
+              color: "#fff",
+            }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', flexDirection:"row", alignItems: 'center' }}>
+                  <Avatar sx={{ 
+                    width: 40, 
+                    height: 40, 
+                    bgcolor: 'rgba(0, 0, 0, 0.2)',
+                    marginRight: 2,
+                  }}>
+                    ?
+                  </Avatar>
+                  <Typography variant="h6" color='#fff'>
+                    {player.username}
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
-            <Typography variant="h4" align="center" sx={{ marginTop: 1 }}>
-              {player.room_stats.Points}
-            </Typography>
-          </Paper>
-        ): null)}
+              <Typography variant="h4" align="center" sx={{ marginTop: 1 }}>
+                {player.room_stats.Points}
+              </Typography>
+            </Paper>
+          )}
       </Box>
 }
