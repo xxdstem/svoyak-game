@@ -69,20 +69,20 @@ export const Game: React.FC = () => {
       {/* Основная сетка */}
       <Grid container spacing={2} sx={{ height: '100%'}}>
         {/* Колонка ведущего */}
-        <Grid minWidth={200} size={2}>
+        <Grid width={220} >
           <HostBar/>
         </Grid>
         
         {/* Центральная колонка с вопросами */}
-        <Grid  sx={{ flexGrow: 1 }}>
+        <Grid  sx={{ flexGrow: 1, flex: "1 0" }} >
           <Box sx={{ 
             height: '100%', 
             display: 'flex',
             width: "100%",
             flexDirection: 'column',
           }}>
-            <Typography variant="h4" align="center" gutterBottom sx={{ marginBottom: 3 }}>
-              {gameData?.Name}
+            <Typography variant="h2" align="center" gutterBottom sx={{ marginBottom: 3 }}>
+              Раунд {currentRound + 1}: {gameData?.Name}
             </Typography>
             
             {/* Общий контейнер для всех тем с вопросами */}
