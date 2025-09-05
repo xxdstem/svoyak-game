@@ -37,7 +37,7 @@ func Run(log *logger.Logger) {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowCredentials: true,
-		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS", "HEAD"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "OPTIONS", "HEAD"},
 	})
 
 	log.Info("Server started on :8080")

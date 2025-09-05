@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Grid,
@@ -9,21 +9,23 @@ import {
   useTheme
 } from '@mui/material';
 
-import type { CurrentQuestion, GameData} from './types';
+import type { CurrentQuestion, GameData, Package} from './types';
 
 import { QuestionDialog } from './QustionDialog';
-import { $game } from '~/store/game';
 import { Players } from './Players';
 import { HostBar } from './HostBar';
-import { useSelector } from 'react-redux';
+import http from '~/utils/axios';
+import { setRoomData } from '~/store/room';
+import { useDispatch } from 'react-redux';
 
-export const Game: React.FC = () => {
-    const pkg = useSelector($game);
+export const Game: React.FC<{pkg: Package}> = (state) => {
+    const { pkg } = state
     if(!pkg) return null;
 
     const rounds: GameData[] = pkg.Rounds;
 
     const theme = useTheme();
+    const dispatch = useDispatch();
     
     const [currentRound, setCurrentRound] = useState(0);
     const gameData = useMemo<GameData>(()=>rounds[currentRound], [rounds, currentRound]);
@@ -58,6 +60,16 @@ export const Game: React.FC = () => {
         }
     }, [themes]);
   
+    // Временное решение, пока нет вебсокета
+    useEffect(()=>{
+      let timer = setInterval(()=>{
+        http.get("/rooms/get").then(r=>{
+          dispatch(setRoomData({ ...r.data}))
+        });
+      }, 5000);
+      
+      return () => clearInterval(timer);
+    }, [])
 
   return (
     <Box sx={{ 

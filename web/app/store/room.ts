@@ -1,20 +1,19 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { Package, RoomDetails } from '~/components/SVOGame/types';
-import type { GameState, StoreState } from '~/types';
+import type { StoreState } from '~/types';
 
 
 
-const initialState: (Package & RoomDetails) | null = null;
+const initialState: RoomDetails | null = null;
 
-const gameSlice = createSlice({
-  name: 'game',
+const roomSlice = createSlice({
+  name: 'room',
   initialState,
   reducers: {
-    setGameData(state, action) {
-      console.log("setting gamedata", action.payload)
+    setRoomData(state, action) {
       return action.payload
     },
-    setRoleForUser(state: GameState, action) { 
+    setRoleForUser(state: RoomDetails | null, action) { 
       if (state !== null) {
         const { user_id, role } = action.payload;
         
@@ -28,7 +27,7 @@ const gameSlice = createSlice({
   }
 });
 
-export const { setGameData, setRoleForUser } = gameSlice.actions;
-export const $game = (state: StoreState) => state.game;
+export const { setRoomData, setRoleForUser } = roomSlice.actions;
+export const $room = (state: StoreState) => state.room;
 
-export default gameSlice.reducer;
+export default roomSlice.reducer;

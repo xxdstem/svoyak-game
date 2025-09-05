@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { $currentUser, leaveRoom } from "~/store/user"
 import { useNavigate } from "react-router"
 import http from "~/utils/axios"
-import { $game, setRoleForUser } from "~/store/game"
+import { $room, setRoleForUser, setRoomData } from "~/store/room"
 
 export const HostBar: React.FC = () => {
     
@@ -13,11 +13,13 @@ export const HostBar: React.FC = () => {
     const navigate = useNavigate();
     const theme = useTheme();
 
-    const game = useSelector($game);
+    const room = useSelector($room);
     const user = useSelector($currentUser);
 
-    const host = useMemo<RoomPlayer | undefined>(()=> game?.players.find(p=>p.room_stats.Role == "host"), [game]);
-    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>game?.players.find(p=>p.id == user?.session_id), [game]);
+    const host = useMemo<RoomPlayer | undefined>(
+      ()=> room?.players.find(p=>p.room_stats.Role == "host"), [room]);
+    const currentPlayer = useMemo<RoomPlayer | undefined>(
+      () => room?.players.find(p=>p.id == user?.session_id), [room]);
     
     const handleAbortGame = async () =>{
       if(window.confirm("Вы уверены?")){
@@ -30,8 +32,13 @@ export const HostBar: React.FC = () => {
     const joinAsHost = async () => {
         var f = new FormData();
         f.append("role", "host")
-        //await http.post("/game/set_role", f);
-        dispatch(setRoleForUser({user_id: user?.session_id, role: "host"}))
+        try{
+          var r = await http.patch("/room/set_role", f);
+          dispatch(setRoomData(r.data))
+        } catch(e) {
+          console.error(e)
+        }
+        //dispatch(setRoleForUser({user_id: user?.session_id, role: "host"}))
     }
 
     return <Paper elevation={3} sx={{ 

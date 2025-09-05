@@ -51,10 +51,7 @@ const Header = () => {
             onClick={()=>logout()}
             sx={{marginLeft: '8px'}}
             size="large"
-            aria-label="show 11 new notifications"
             color="inherit"
-            aria-controls="msgs-menu"
-            aria-haspopup="true"
           >
             <ExitToAppIcon width="20" height="20" />
           </IconButton>

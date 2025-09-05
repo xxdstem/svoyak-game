@@ -9,6 +9,12 @@ import (
 	"svoyak/pkg/parser"
 )
 
+const (
+	role_host   = "host"
+	role_player = "player"
+	role_viewer = ""
+)
+
 var log *logger.Logger
 
 type Store interface {
@@ -102,4 +108,27 @@ func (uc *uc) AbortRoom(room *entity.Room) error {
 	os.RemoveAll("./temp/pkg/" + room.Package.PackageID)
 	room = nil
 	return nil
+}
+
+func (uc *uc) SetPlayerRole(player *entity.User, role string) error {
+	if !isValidRole(role) {
+		return errors.New("bad request")
+	}
+	if role == role_host {
+		for _, p := range player.Room.Players {
+			if p.RoomStats.Role == role_host {
+				return errors.New("host role is not available")
+			}
+		}
+	}
+	player.RoomStats.Role = role
+	return nil
+}
+
+func isValidRole(role string) bool {
+	switch role {
+	case role_host, role_player, role_viewer:
+		return true
+	}
+	return false
 }

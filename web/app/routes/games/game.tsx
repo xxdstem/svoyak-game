@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
 import { Game } from "~/components/SVOGame/SVoGame";
-import type { Package, RoomDetails } from "~/components/SVOGame/types";
-import { $game, setGameData } from "~/store/game";
+import type { Package } from "~/components/SVOGame/types";
+import { setRoomData } from "~/store/room";
 import http from "~/utils/axios";
 
 export default function App (){
@@ -11,24 +11,26 @@ export default function App (){
   const dispatch = useDispatch();
 
   const [isLoading, setLoading] = useState(true)
+  const [pkg, setPackage] = useState<Package>();
 
   useEffect(()=>{
-    http.get("/game/gamedata").then((r)=>{
-      var resp : Package = r.data;
-      
-      http.get("/rooms/get").then(r=>{
-        dispatch(setGameData({...resp, ...r.data}))
+    http.get("/rooms/get").then(r=>{
+      dispatch(setRoomData({ ...r.data}))
+      http.get("/game/gamedata").then((r)=>{
+        var resp : Package = r.data;
+        setPackage(resp);
         setLoading(false);
       })
-      }).catch((err)=>{
+      
+      
+    }).catch((err)=>{
       if(err.response.status == 404){
         navigate("/404")
       }
     })
-    
   },[])
-  if (isLoading){
+  if (isLoading || !pkg){
     return <> Loading. . . .</>
   }
-  return <Game/>
+  return <Game pkg={pkg}/>
 }

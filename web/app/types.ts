@@ -16,9 +16,7 @@ export type Room = {
     players_count: number;
 }
 
-export type GameState = Package & RoomDetails | null;
-
 export type StoreState = {
     user: User | null;
-    game: GameState;
+    room: RoomDetails | null;
 }

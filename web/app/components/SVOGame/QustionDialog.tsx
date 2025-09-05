@@ -1,6 +1,6 @@
 import { Box, Button, DialogActions, DialogContent, DialogTitle, Divider, Typography, useTheme } from "@mui/material";
 import type { CurrentQuestion, Question, Theme } from "./types";
-import { $game } from "~/store/game";
+import { $room } from "~/store/room";
 import { useSelector } from "react-redux";
 import MusicIcon from "./MusicIcon";
 import { useCallback, useRef, useState } from "react";
@@ -13,7 +13,7 @@ type Props = {
 export const QuestionDialog: React.FC<Props> = (props) => {
     const { themes, currentQuestion  } = props;
 
-    const gameData = useSelector($game);
+    const roomData = useSelector($room);
     const theme = useTheme();
 
     const [showAnswer, setShowAnswer] = useState(false);
@@ -54,7 +54,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     const answerText = getAnswerText(question);
     const media =  getQuestionMedia(question);
 
-    if (!gameData){
+    if (!roomData){
         return null
     }
     return (
@@ -73,7 +73,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
                 {media.Type === 'image' && (
                         <img
                         ref={imgRef}
-                        src={`http://localhost:8080/files/${gameData.PackageID}/Images/${encodeURIComponent(encodeURIComponent(media.Content))}`}
+                        src={`http://localhost:8080/files/${roomData.package_id}/Images/${encodeURIComponent(encodeURIComponent(media.Content))}`}
                         alt="Question media" 
                         style={{ maxWidth: '90%', maxHeight: '70vh' }} 
                         />
@@ -81,7 +81,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
                     
                     {media.Type === 'audio' && (<>
                         <audio style={{display:"none"}} controls autoPlay>
-                        <source src={`http://localhost:8080/files/${gameData.PackageID}/Audio/${encodeURIComponent(encodeURIComponent(media.Content))}`} type="audio/mpeg" />
+                        <source src={`http://localhost:8080/files/${roomData.package_id}/Audio/${encodeURIComponent(encodeURIComponent(media.Content))}`} type="audio/mpeg" />
                         Ваш браузер не поддерживает аудио элемент.
                         </audio>
                         <MusicIcon/></>

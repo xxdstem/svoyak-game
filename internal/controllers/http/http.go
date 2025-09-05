@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"svoyak/internal/entity"
 	"svoyak/internal/entity/dto"
 	"svoyak/internal/models"
@@ -32,10 +33,12 @@ type RoomUseCase interface {
 	ListRooms() []*entity.Room
 	GetRoom(roomID string) (*entity.Room, error)
 	AbortRoom(room *entity.Room) error
+	SetPlayerRole(player *entity.User, role string) error
 }
 
 type GameUseCase interface {
 }
+
 type handler struct {
 	uuc UserUseCase
 	ruc RoomUseCase
@@ -55,10 +58,11 @@ func (h *handler) Register(router *mux.Router) {
 	router.HandleFunc("/logout", h.Logout).Methods("POST")
 	router.HandleFunc("/rooms/list", h.ListRooms)
 	router.HandleFunc("/rooms/join", h.JoinRoom).Methods("POST")
-	router.HandleFunc("/rooms/get", h.GetRoom)
+	router.HandleFunc("/rooms/get", h.GetCurrentRoom)
 	router.HandleFunc("/game/create", h.CreateGame).Methods("POST")
 	router.HandleFunc("/game/gamedata", h.GameData)
 	router.HandleFunc("/game/abort", h.AbortGame)
+	router.HandleFunc("/room/set_role", h.RoomSetRole).Methods("PATCH")
 }
 
 func (h *handler) GetIdentify(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +113,7 @@ func (h *handler) ListRooms(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handler) GetRoom(w http.ResponseWriter, r *http.Request) {
+func (h *handler) GetCurrentRoom(w http.ResponseWriter, r *http.Request) {
 	user := h.uuc.GetUser(r)
 	if user == nil {
 		http.Error(w, "Non authorized", http.StatusUnauthorized)
@@ -219,6 +223,18 @@ func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	h.ruc.JoinRoom(user, room.ID)
 	user.Room = room
 	j, _ := json.Marshal(dto.RoomCreationResponse(room))
+	w.Write(j)
+}
+
+func (h *handler) RoomSetRole(w http.ResponseWriter, r *http.Request) {
+	user := h.uuc.GetUser(r)
+	role := strings.ToLower(r.FormValue("role"))
+	err := h.ruc.SetPlayerRole(user, role)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	j, _ := json.Marshal(dto.RoomDetailedResponse(user.Room))
 	w.Write(j)
 }
 

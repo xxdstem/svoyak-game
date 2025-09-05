@@ -1,9 +1,10 @@
 import { Avatar, Box, Button, Paper, Typography, useTheme } from "@mui/material"
 import { useDispatch, useSelector } from "react-redux";
-import { $game, setRoleForUser } from "~/store/game";
-import type { RoomPlayer } from "./types";
+import { $room, setRoleForUser, setRoomData } from "~/store/room";
+import { type RoomDetails, type RoomPlayer } from "./types";
 import { useMemo } from "react";
 import { $currentUser } from "~/store/user";
+import http from "~/utils/axios";
 
 
 export const Players: React.FC = () => {
@@ -12,9 +13,9 @@ export const Players: React.FC = () => {
     const dispatch = useDispatch();
 
     const user = useSelector($currentUser);
-    const game = useSelector($game);
+    const room = useSelector($room);
 
-    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>game?.players.find(p=>p.id == user?.session_id), [game]);
+    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>room?.players.find(p=>p.id == user?.session_id), [room]);
     
     const playerColors = [
       "#2cf",
@@ -25,9 +26,15 @@ export const Players: React.FC = () => {
 
     const joinAsUser = async () => {
         var f = new FormData();
-        f.append("role", "host")
-        //await http.post("/game/set_role", f);
-        dispatch(setRoleForUser({user_id: user?.session_id, role: "player"}))
+        f.append("role", "player")
+        try{
+          var r = await http.patch("/room/set_role", f);
+          dispatch(setRoomData(r.data))
+        } catch(e) {
+          console.error(e)
+        }
+          
+        //dispatch(setRoleForUser({user_id: user?.session_id, role: "player"}))
     }
 
     return <Box sx={{ 
@@ -68,7 +75,7 @@ export const Players: React.FC = () => {
             </Box>
           </Paper>
         )}
-        {game?.players.map((player, i) => player.room_stats.Role == "player" ? (
+        {room?.players.map((player, i) => player.room_stats.Role == "player" ? (
           <Paper key={player.id} elevation={3} sx={{ 
             padding: 2,
             minWidth: 150,
