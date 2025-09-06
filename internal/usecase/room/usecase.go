@@ -56,6 +56,9 @@ func (uc *uc) JoinRoom(user *entity.User, roomID string) error {
 	if !ok {
 		return errors.New("room not found")
 	}
+	if room.PlayersMax == len(room.Players) {
+		return errors.New("room is full")
+	}
 	room.Players[user.SessionID] = user
 	user.RoomStats = &entity.RoomStats{}
 	user.Room = room
