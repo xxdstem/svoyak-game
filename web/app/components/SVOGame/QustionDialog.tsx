@@ -1,9 +1,10 @@
 import { Box, Button, DialogActions, DialogContent, DialogTitle, Divider, Typography, useTheme } from "@mui/material";
-import type { CurrentQuestion, Question, Theme } from "./types";
+import type { CurrentQuestion, Question, RoomPlayer, Theme } from "./types";
 import { $room } from "~/store/room";
 import { useSelector } from "react-redux";
 import MusicIcon from "./MusicIcon";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { $currentUser } from "~/store/user";
 
 type Props = {
     themes: Theme[];
@@ -13,11 +14,14 @@ type Props = {
 export const QuestionDialog: React.FC<Props> = (props) => {
     const { themes, currentQuestion  } = props;
 
-    const roomData = useSelector($room);
+    const room = useSelector($room);
+    const user = useSelector($currentUser);
     const theme = useTheme();
 
     const [showAnswer, setShowAnswer] = useState(false);
 
+    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>room?.players.find(p=>p.id == user?.session_id), [room]);
+    
     const imgRef = useRef<HTMLImageElement>(null);
     // Получение текста вопроса
     const getQuestionText = (question: Question) => {
@@ -49,14 +53,11 @@ export const QuestionDialog: React.FC<Props> = (props) => {
 
 
     const gameTheme = themes[currentQuestion.themeIndex];
-    const question = gameTheme.Questions[currentQuestion.questionIndex];
+    const question = currentQuestion.question;
     const questionText = getQuestionText(question);
     const answerText = getAnswerText(question);
     const media =  getQuestionMedia(question);
-
-    if (!roomData){
-        return null
-    }
+    
     return (
         <>
         <DialogTitle sx={{ 
@@ -73,7 +74,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
                 {media.Type === 'image' && (
                         <img
                         ref={imgRef}
-                        src={`http://localhost:8080/files/${roomData.package_id}/Images/${encodeURIComponent(encodeURIComponent(media.Content))}`}
+                        src={`http://localhost:8080/files/${room.package_id}/Images/${encodeURIComponent(encodeURIComponent(media.Content))}`}
                         alt="Question media" 
                         style={{ maxWidth: '90%', maxHeight: '70vh' }} 
                         />
@@ -81,7 +82,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
                     
                     {media.Type === 'audio' && (<>
                         <audio style={{display:"none"}} controls autoPlay>
-                        <source src={`http://localhost:8080/files/${roomData.package_id}/Audio/${encodeURIComponent(encodeURIComponent(media.Content))}`} type="audio/mpeg" />
+                        <source src={`http://localhost:8080/files/${room.package_id}/Audio/${encodeURIComponent(encodeURIComponent(media.Content))}`} type="audio/mpeg" />
                         Ваш браузер не поддерживает аудио элемент.
                         </audio>
                         <MusicIcon/></>
@@ -108,7 +109,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
             backgroundColor: theme.palette.background.default,
         }}>
            
-                {!showAnswer && (<Button
+                {currentPlayer?.room_stats.Role == "host" && !showAnswer && (<Button
                 onClick={()=>setShowAnswer(true)} 
                 color="primary" 
                 variant="contained"

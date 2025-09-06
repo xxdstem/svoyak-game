@@ -9,14 +9,15 @@ import {
   useTheme
 } from '@mui/material';
 
-import type { CurrentQuestion, GameData, Package} from './types';
+import type { CurrentQuestion, GameData, Package, Question, RoomPlayer} from './types';
 
 import { QuestionDialog } from './QustionDialog';
 import { Players } from './Players';
 import { HostBar } from './HostBar';
 import http from '~/utils/axios';
-import { setRoomData } from '~/store/room';
-import { useDispatch } from 'react-redux';
+import { $room, setRoomData } from '~/store/room';
+import { useDispatch, useSelector } from 'react-redux';
+import { $currentUser } from '~/store/user';
 
 export const Game: React.FC<{pkg: Package}> = (state) => {
     const { pkg } = state
@@ -26,27 +27,34 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
 
     const theme = useTheme();
     const dispatch = useDispatch();
-    
-    const [currentRound, setCurrentRound] = useState(0);
-    const gameData = useMemo<GameData>(()=>rounds[currentRound], [rounds, currentRound]);
-    
-    const themes = useMemo(()=>gameData.Themes.map(theme => ({
-        ...theme,
-        Questions: theme.Questions.map(question => ({
-            ...question
-        }))
-    })),[gameData])
+    const room = useSelector($room);
+    const user = useSelector($currentUser);
 
+    const [currentRound, setCurrentRound] = useState(0);
     const [currentQuestion, setCurrentQuestion] = useState < CurrentQuestion | null > (null);
 
-    const handleQuestionClick = (themeIndex: number, questionIndex: number) => {
-        if (!themes[themeIndex].Questions[questionIndex].isAnswered) {
-          themes[themeIndex].Questions[questionIndex].isAnswered = true;
-            setCurrentQuestion({
-                themeIndex,
-                questionIndex
-            });
-        }
+    const gameData = useMemo<GameData>(()=>rounds[currentRound], [rounds, currentRound]);
+    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>room?.players.find(p=>p.id == user?.session_id), [room]);
+        
+    const themes = useMemo(()=>gameData.Themes.map(theme => ({
+      ...theme,
+      Questions: theme.Questions.map(question => ({
+          ...question
+      }))
+    })),[gameData])
+
+    const availableQuestion = useCallback((question: Question)=>{
+      return !question.isAnswered && (
+                        currentPlayer?.room_stats.QuestionPicker
+                        || currentPlayer?.room_stats.Role == "host")
+    },[currentPlayer])
+
+
+    const handleQuestionClick = (themeIndex: number, question: Question) => {
+      if (availableQuestion(question)) {
+        question.isAnswered = true;
+          setCurrentQuestion({themeIndex, question});
+      }
     };
 
     const nextRound = () => {
@@ -54,10 +62,10 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     };
 
     const handleCloseQuestion = useCallback(() => {
-        setCurrentQuestion(null);
-        if(themes.every(t => t.Questions.every(q => q.isAnswered))){
-          nextRound();
-        }
+      setCurrentQuestion(null);
+      if(themes.every(t => t.Questions.every(q => q.isAnswered))){
+        nextRound();
+      }
     }, [themes]);
   
     // Временное решение, пока нет вебсокета
@@ -71,7 +79,77 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
       return () => clearInterval(timer);
     }, [])
 
-  return (
+    const questionBox = (<>
+      <Typography variant="h2" align="center" gutterBottom sx={{ marginBottom: 3 }}>
+        Раунд {currentRound + 1}: {gameData?.Name}
+      </Typography>
+      <Box
+      sx={{ display: 'flex', flexDirection: 'column', gap: 2, paddingBottom: "150px" }}>
+        {themes.map((gameTheme, themeIndex) => (
+          <Box 
+            key={themeIndex}
+            sx={{ 
+              display: 'flex', 
+              flexDirection: 'row', 
+              gap: 1,
+            }}
+          >
+            {/* Карточка с названием темы */}
+            <Card sx={{ 
+              backgroundColor: theme.palette.primary.light,
+              color: theme.palette.text.primary,
+              width: 200, // Фиксированная ширина для темы
+              minHeight: 80, // Такая же высота, как у вопросов
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <CardContent>
+                <Typography variant="h6" align="center">
+                  {gameTheme.Name}
+                </Typography>
+              </CardContent>
+            </Card>
+            
+            {/* Вопросы в строку */}
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {gameTheme.Questions
+                .sort((a, b) => a.Price - b.Price)
+                .map((question, questionIndex) => (
+                  <Card 
+                    key={questionIndex}
+                    onClick={() => handleQuestionClick(themeIndex, question)}
+                    
+                    sx={{ 
+                      cursor: availableQuestion(question)
+                        ? 'pointer': 'default',
+                      backgroundColor: availableQuestion(question)
+                        ? theme.palette.primary.dark
+                        : theme.palette.grey[100],
+                      color: theme.palette.text.primary,
+                      width: 100, // Фиксированная ширина вопросов
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      '&:hover': availableQuestion(question) ? {
+                        backgroundColor: theme.palette.primary.main,
+                      } : {},
+                    }}
+                  >
+                    <CardContent>
+                      <Typography variant="h5" align="center">
+                        {question.isAnswered ? '' : question.Price}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                ))}
+            </Box>
+          </Box>
+        ))}
+      </Box>
+    </>);
+
+    return (
     <Box sx={{ 
       height: 'calc(100vh - 206px)', 
       padding: 2, 
@@ -93,74 +171,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
             width: "100%",
             flexDirection: 'column',
           }}>
-            <Typography variant="h2" align="center" gutterBottom sx={{ marginBottom: 3 }}>
-              Раунд {currentRound + 1}: {gameData?.Name}
-            </Typography>
-            
-            {/* Общий контейнер для всех тем с вопросами */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, paddingBottom: "150px" }}>
-              {themes.map((gameTheme, themeIndex) => (
-                <Box 
-                  key={themeIndex}
-                  sx={{ 
-                    display: 'flex', 
-                    flexDirection: 'row', 
-                    gap: 1,
-                  }}
-                >
-                  {/* Карточка с названием темы */}
-                  <Card sx={{ 
-                    backgroundColor: theme.palette.primary.light,
-                    color: theme.palette.text.primary,
-                    width: 200, // Фиксированная ширина для темы
-                    minHeight: 80, // Такая же высота, как у вопросов
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                    <CardContent>
-                      <Typography variant="h6" align="center">
-                        {gameTheme.Name}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Вопросы в строку */}
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    {gameTheme.Questions
-                      .sort((a, b) => a.Price - b.Price)
-                      .map((question, questionIndex) => (
-                        <Card 
-                          key={questionIndex}
-                          onClick={() => handleQuestionClick(themeIndex, questionIndex)}
-                          sx={{ 
-                            cursor: question.isAnswered ? 'default' : 'pointer',
-                            backgroundColor: question.isAnswered 
-                              ? theme.palette.grey[100] 
-                              : theme.palette.primary.dark,
-                            color: theme.palette.text.primary,
-                            width: 100, // Фиксированная ширина вопросов
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            '&:hover': {
-                              backgroundColor: question.isAnswered 
-                                ? theme.palette.grey[100] 
-                                : theme.palette.primary.main,
-                            },
-                          }}
-                        >
-                          <CardContent>
-                            <Typography variant="h5" align="center">
-                              {question.isAnswered ? '' : question.Price}
-                            </Typography>
-                          </CardContent>
-                        </Card>
-                      ))}
-                  </Box>
-                </Box>
-              ))}
-            </Box>
+          {room.is_started ? questionBox : <Typography variant="h1" my={"auto"} align="center">Ожидание начала игры</Typography>}
           </Box>
         </Grid>
       </Grid>
@@ -190,4 +201,6 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
       
     </Box>
   );
+
+  
 };

@@ -8,6 +8,7 @@ type User struct {
 }
 
 type RoomStats struct {
-	Role   string
-	Points int
+	Role           string
+	QuestionPicker bool
+	Points         int
 }

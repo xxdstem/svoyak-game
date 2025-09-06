@@ -18,5 +18,5 @@ export type Room = {
 
 export type StoreState = {
     user: User | null;
-    room: RoomDetails | null;
+    room: RoomDetails;
 }

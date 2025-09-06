@@ -13,6 +13,9 @@ type Room struct {
 	Package    models.Package
 	Players    map[string]*User
 	PlayersMax int
+	// Implement this as State with enums?
+	IsPaused  bool
+	IsStarted bool
 }
 
 func NewRoom(name string, password string) Room {

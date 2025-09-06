@@ -5,7 +5,7 @@ import { type RoomDetails, type RoomPlayer } from "./types";
 import { useMemo } from "react";
 import { $currentUser } from "~/store/user";
 import http from "~/utils/axios";
-
+import StarIcon from '@mui/icons-material/Star';
 
 export const Players: React.FC = () => {
     
@@ -95,12 +95,12 @@ export const Players: React.FC = () => {
                     ?
                   </Avatar>
                   <Typography variant="h6" color='#fff'>
-                    {player.username}
+                    {player.username} {player.room_stats.QuestionPicker &&  <StarIcon fontSize="small" />}
                   </Typography>
                 </Box>
               </Box>
               <Typography variant="h4" align="center" sx={{ marginTop: 1 }}>
-                {player.room_stats.Points}
+                {player.room_stats.Points} 
               </Typography>
             </Paper>
           )}

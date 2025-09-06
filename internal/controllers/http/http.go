@@ -34,6 +34,7 @@ type RoomUseCase interface {
 	GetRoom(roomID string) (*entity.Room, error)
 	AbortRoom(room *entity.Room) error
 	SetPlayerRole(player *entity.User, role string) error
+	StartGame(room *entity.Room) error
 }
 
 type GameUseCase interface {
@@ -62,6 +63,7 @@ func (h *handler) Register(router *mux.Router) {
 	router.HandleFunc("/game/create", h.CreateGame).Methods("POST")
 	router.HandleFunc("/game/gamedata", h.GameData)
 	router.HandleFunc("/game/abort", h.AbortGame)
+	router.HandleFunc("/room/start", h.StartGame).Methods("PATCH")
 	router.HandleFunc("/room/set_role", h.RoomSetRole).Methods("PATCH")
 }
 
@@ -242,4 +244,11 @@ func (h *handler) AbortGame(w http.ResponseWriter, r *http.Request) {
 	user := h.uuc.GetUser(r)
 	h.ruc.LeaveRoom(user)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *handler) StartGame(w http.ResponseWriter, r *http.Request) {
+	user := h.uuc.GetUser(r)
+	h.ruc.StartGame(user.Room)
+	j, _ := json.Marshal(dto.RoomDetailedResponse(user.Room))
+	w.Write(j)
 }

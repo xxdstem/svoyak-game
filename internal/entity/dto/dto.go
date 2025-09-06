@@ -39,6 +39,8 @@ type roomDetailedResponse struct {
 	PackageID   string               `json:"package_id"`
 	PackageName string               `json:"package_name"`
 	PlayersMax  int                  `json:"players_max"`
+	IsStarted   bool                 `json:"is_started"`
+	IsPaused    bool                 `json:"is_paused"`
 	Players     []roomPlayerResponse `json:"players"`
 }
 
@@ -48,6 +50,8 @@ func RoomDetailedResponse(room *entity.Room) roomDetailedResponse {
 		Name:        room.Name,
 		PackageID:   room.Package.PackageID,
 		PackageName: room.Package.Name,
+		IsStarted:   room.IsStarted,
+		IsPaused:    room.IsPaused,
 		PlayersMax:  room.PlayersMax,
 	}
 	players := make([]roomPlayerResponse, 0)
@@ -62,7 +66,6 @@ type roomResponse struct {
 	ID           string `json:"id"`
 	Name         string `json:"name"`
 	WithPassword bool   `json:"with_password"`
-	PackageID    string `json:"package_id"`
 	PackageName  string `json:"package_name"`
 	PlayersMax   int    `json:"players_max"`
 	PlayersCount int    `json:"players_count"`
@@ -81,7 +84,6 @@ func RoomResponse(room *entity.Room) roomResponse {
 		ID:           room.ID,
 		Name:         room.Name,
 		WithPassword: room.Password != "",
-		PackageID:    room.Package.PackageID,
 		PackageName:  room.Package.Name,
 		PlayersMax:   room.PlayersMax,
 		PlayersCount: len(room.Players),

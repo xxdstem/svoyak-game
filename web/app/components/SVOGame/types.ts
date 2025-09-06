@@ -51,6 +51,7 @@ export type Package = {
 
 export type RoomStats = {
   Role: string;
+  QuestionPicker: boolean;
   Points: number;
 }
 
@@ -67,10 +68,12 @@ export type RoomDetails = {
 	package_name: string;      
 	players_max:  number;
 	players:     RoomPlayer[];
+  is_started: boolean;
+  is_paused: boolean;
 }
 
 
 export type CurrentQuestion ={
     themeIndex: number;
-    questionIndex: number;
+    question: Question;
 }
