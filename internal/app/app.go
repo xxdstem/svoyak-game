@@ -30,6 +30,11 @@ func Run(log *logger.Logger) {
 	rr := r.PathPrefix("/api").Subrouter()
 	rr.Use(apihandler.New(log).Handle)
 	apiRouter.Register(rr)
+	rr.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`Route not found!`))
+	})
+
 	r.HandleFunc("/files/{packageID}/{fileType}/{file}", filehandler.Handle)
 	r.PathPrefix("/").HandlerFunc(spaHandler.Handle)
 
