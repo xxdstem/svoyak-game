@@ -37,11 +37,16 @@ export default function App() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    http.get("/rooms/list").then((r) => {
-      setRooms(r.data || []);
-    }).catch(() => {
-      setRooms([]);
-    }).finally(() => setLoading(false));
+    const loadRooms = async () =>{
+      return http.get("/rooms/list").then((r) => {
+        setRooms(r.data || []);
+      }).catch(() => {
+        setRooms([]);
+      })
+    }
+    loadRooms().finally(() => setLoading(false));
+    const int = setInterval(()=>loadRooms(), 1000);
+    return () => clearInterval(int);
   }, []);
 
   const handleRoomClick = useCallback((room: Room) => {
