@@ -29,10 +29,10 @@ type RoomUseCase interface {
 	GetRoom(roomID string) (*entity.Room, error)
 	AbortRoom(room *entity.Room) error
 	SetPlayerRole(player *entity.User, role string) error
-	StartGame(room *entity.Room) error
 }
 
 type GameUseCase interface {
+	StartGame(room *entity.Room) error
 }
 
 type handler struct {
@@ -226,7 +226,7 @@ func (h *handler) AbortGame(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) StartGame(w http.ResponseWriter, r *http.Request) {
 	user := h.uuc.GetUser(r)
-	h.ruc.StartGame(user.Room)
+	h.guc.StartGame(user.Room)
 	j, _ := json.Marshal(dto.RoomDetailedResponse(user.Room))
 	w.Write(j)
 }
