@@ -58,6 +58,7 @@ export type RoomStats = {
 export type RoomPlayer = {
   id: string;
   username: string;
+  color: string;
   room_stats: RoomStats;
 }
 

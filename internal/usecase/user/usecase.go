@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"svoyak/internal/entity"
+	"svoyak/internal/utils"
 	"svoyak/pkg/logger"
 )
 
@@ -39,6 +40,7 @@ func (uc *uc) NewUser(sessionID string, name string) (*entity.User, error) {
 		return nil, errors.New("this name is already taken")
 	}
 	user := &entity.User{SessionID: sessionID, UserName: name}
+	user.Color = utils.RandomHexColor()
 	uc.store.Set(sessionID, user)
 	return user, nil
 }

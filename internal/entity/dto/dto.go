@@ -10,12 +10,14 @@ type userResponse struct {
 type roomPlayerResponse struct {
 	ID        string            `json:"id"`
 	UserName  string            `json:"username"`
+	Color     string            `json:"color"`
 	RoomStats *entity.RoomStats `json:"room_stats"`
 }
 
 func RoomPlayerResponse(user *entity.User) roomPlayerResponse {
 	return roomPlayerResponse{
 		ID:        user.SessionID,
+		Color:     user.Color,
 		RoomStats: user.RoomStats,
 		UserName:  user.UserName,
 	}

@@ -17,12 +17,6 @@ export const Players: React.FC = () => {
 
     const currentPlayer = useMemo<RoomPlayer | undefined>(()=>room?.players.find(p=>p.id == user?.session_id), [room]);
     
-    const playerColors = [
-      "#2cf",
-      "#f6a",
-      theme.palette.warning.main,
-      theme.palette.error.main
-    ];
 
     const joinAsUser = async () => {
         var f = new FormData();
@@ -81,7 +75,7 @@ export const Players: React.FC = () => {
             <Paper key={player.id} elevation={3} sx={{ 
               padding: 2,
               minWidth: 150,
-              backgroundColor: playerColors[i],
+              backgroundColor: player.color,
               color: "#fff",
             }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

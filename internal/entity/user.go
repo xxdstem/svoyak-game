@@ -5,6 +5,7 @@ type User struct {
 	Room      *Room
 	RoomStats *RoomStats
 	UserName  string
+	Color     string
 }
 
 type RoomStats struct {

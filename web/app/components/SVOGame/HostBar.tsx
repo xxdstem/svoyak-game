@@ -73,7 +73,7 @@ export const HostBar: React.FC = () => {
         <Avatar sx={{ 
           width: 80, 
           height: 80, 
-          bgcolor: theme.palette.primary.dark, 
+          bgcolor: host.color, 
           fontSize: '2rem',
           marginBottom: 2,
         }}>
