@@ -2,16 +2,12 @@ package http
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
-	"os"
 	"strings"
 	"svoyak/internal/entity"
 	"svoyak/internal/entity/dto"
-	"svoyak/internal/models"
 	"svoyak/pkg/logger"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -26,10 +22,9 @@ type UserUseCase interface {
 }
 
 type RoomUseCase interface {
-	CreateRoom(name string, password string) (*entity.Room, error)
+	CreateGame(user *entity.User, req *dto.CreateGameRequest) (*entity.Room, error)
 	LeaveRoom(user *entity.User) error
 	JoinRoom(user *entity.User, roomID string) error
-	UnpackAndLoadPackage(filename string) (*models.Package, error)
 	ListRooms() []*entity.Room
 	GetRoom(roomID string) (*entity.Room, error)
 	AbortRoom(room *entity.Room) error
@@ -185,45 +180,28 @@ func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Room already taken", http.StatusBadRequest)
 		return
 	}
-	name := r.FormValue("name")
-	password := r.FormValue("password")
-	r.ParseMultipartForm(1000 << 20)
+	if err := r.ParseMultipartForm(1000 << 20); err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
 	file, _, err := r.FormFile("package")
 	if err != nil {
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
-	uuid := uuid.New().String()
-	err = os.MkdirAll("./temp", os.ModePerm|os.ModeSticky)
-	if err != nil {
-		log.Error(err)
-	}
-	dst, err := os.Create("./temp/" + uuid + ".siq")
-	if err != nil {
-		http.Error(w, "Error creating file", http.StatusInternalServerError)
-		return
-	}
-	defer dst.Close()
-	defer os.Remove("./temp/" + uuid + ".siq")
 
-	if _, err := io.Copy(dst, file); err != nil {
-		http.Error(w, "Error saving file", http.StatusInternalServerError)
-		return
+	req := &dto.CreateGameRequest{
+		Name:     r.FormValue("name"),
+		Password: r.FormValue("password"),
+		File:     file,
 	}
-	pkg, err := h.ruc.UnpackAndLoadPackage(uuid)
+
+	room, err := h.ruc.CreateGame(user, req)
 	if err != nil {
-		log.Error(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	room, err := h.ruc.CreateRoom(name, password)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	room.Package = *pkg
-	h.ruc.JoinRoom(user, room.ID)
-	user.Room = room
 	j, _ := json.Marshal(dto.RoomCreationResponse(room))
 	w.Write(j)
 }

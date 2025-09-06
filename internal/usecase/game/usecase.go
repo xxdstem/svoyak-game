@@ -2,7 +2,9 @@ package game
 
 import (
 	"svoyak/internal/entity"
+	"svoyak/internal/models"
 	"svoyak/pkg/logger"
+	"svoyak/pkg/parser"
 )
 
 var log *logger.Logger
@@ -21,4 +23,18 @@ type uc struct {
 func New(l *logger.Logger, store Store) *uc {
 	log = l
 	return &uc{store: store}
+}
+
+func (uc *uc) UnpackAndLoadPackage(filename string) (*models.Package, error) {
+	uuid, err := parser.UnpackZipArchive(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	pkg, err := parser.ParseFromFile("./temp/pkg/" + uuid + "/" + "content.xml")
+	pkg.PackageID = uuid
+	if err != nil {
+		return nil, err
+	}
+	return pkg, nil
 }

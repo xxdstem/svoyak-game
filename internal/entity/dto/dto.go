@@ -1,6 +1,9 @@
 package dto
 
-import "svoyak/internal/entity"
+import (
+	"mime/multipart"
+	"svoyak/internal/entity"
+)
 
 type userResponse struct {
 	SessionID string `json:"session_id"`
@@ -100,4 +103,10 @@ func RoomCreationResponse(room *entity.Room) roomCreationResponse {
 	return roomCreationResponse{
 		RoomID: room.ID,
 	}
+}
+
+type CreateGameRequest struct {
+	Name     string
+	Password string
+	File     multipart.File
 }

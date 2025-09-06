@@ -2,12 +2,14 @@ package room
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
+	"mime/multipart"
 	"os"
 	"svoyak/internal/entity"
+	"svoyak/internal/entity/dto"
 	"svoyak/internal/models"
 	"svoyak/pkg/logger"
-	"svoyak/pkg/parser"
 
 	. "github.com/ahmetb/go-linq/v3"
 )
@@ -27,14 +29,54 @@ type Store interface {
 	FindByName(name string) *entity.User
 }
 
-type uc struct {
-	store Store
-	rooms map[string]*entity.Room // хранение комнат
+type GameUseCase interface {
+	UnpackAndLoadPackage(filename string) (*models.Package, error)
 }
 
-func New(l *logger.Logger, store Store) *uc {
+type FileService interface {
+	SaveTempFile(file multipart.File) (string, error)
+}
+
+type uc struct {
+	store       Store
+	gameUsecase GameUseCase
+	fs          FileService
+	rooms       map[string]*entity.Room // хранение комнат
+}
+
+func New(l *logger.Logger, store Store, gameUsecase GameUseCase, fs FileService) *uc {
 	log = l
-	return &uc{store: store, rooms: make(map[string]*entity.Room)}
+	return &uc{store: store, rooms: make(map[string]*entity.Room), gameUsecase: gameUsecase, fs: fs}
+}
+
+func (uc *uc) CreateGame(user *entity.User, req *dto.CreateGameRequest) (*entity.Room, error) {
+	pkg, err := uc.saveAndProcessPackage(req.File)
+	if err != nil {
+		return nil, fmt.Errorf("failed to process package: %w", err)
+	}
+
+	room, err := uc.CreateRoom(req.Name, req.Password)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create room: %w", err)
+	}
+
+	room.Package = *pkg
+
+	if err := uc.JoinRoom(user, room.ID); err != nil {
+		return nil, fmt.Errorf("failed to join room: %w", err)
+	}
+
+	return room, nil
+}
+
+func (uc *uc) saveAndProcessPackage(file multipart.File) (*models.Package, error) {
+	tempPath, err := uc.fs.SaveTempFile(file)
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(tempPath)
+
+	return uc.gameUsecase.UnpackAndLoadPackage(tempPath)
 }
 
 func (uc *uc) CreateRoom(name string, password string) (*entity.Room, error) {
@@ -86,21 +128,6 @@ func (uc *uc) ListRooms() []*entity.Room {
 		rooms = append(rooms, room)
 	}
 	return rooms
-}
-
-func (uc *uc) UnpackAndLoadPackage(filename string) (*models.Package, error) {
-	uuid, err := parser.UnpackZipArchive(filename)
-	if err != nil {
-		log.Error("error unpack")
-		return nil, err
-	}
-
-	pkg, err := parser.ParseFromFile("./temp/pkg/" + uuid + "/" + "content.xml")
-	pkg.PackageID = uuid
-	if err != nil {
-		return nil, err
-	}
-	return pkg, nil
 }
 
 func (uc *uc) AbortRoom(room *entity.Room) error {

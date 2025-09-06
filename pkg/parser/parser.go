@@ -11,11 +11,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func UnpackZipArchive(filename string) (string, error) {
-	archivePath := "./temp/" + filename + ".siq"
-	defer os.RemoveAll("./temp/" + filename)
+func UnpackZipArchive(filePath string) (string, error) {
 	uuid := uuid.New().String()
-	if archive, err := zip.OpenReader(archivePath); err == nil {
+	if archive, err := zip.OpenReader(filePath); err == nil {
 		defer archive.Close()
 
 		basePath := "./temp/pkg/" + uuid

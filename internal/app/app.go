@@ -10,6 +10,7 @@ import (
 	"svoyak/internal/usecase/user"
 	apihandler "svoyak/pkg/apiHandler"
 	filehandler "svoyak/pkg/fileHandler"
+	fileservice "svoyak/pkg/fileService"
 	"svoyak/pkg/logger"
 	spaHandler "svoyak/pkg/spaHandler"
 
@@ -23,8 +24,8 @@ func Run(log *logger.Logger) {
 	store := store.New()
 
 	userUseCase := user.New(log, store)
-	roomUseCase := room.New(log, store)
 	gameUseCase := game.New(log, store)
+	roomUseCase := room.New(log, store, gameUseCase, fileservice.New())
 	r := mux.NewRouter()
 	apiRouter := api.New(log, userUseCase, roomUseCase, gameUseCase)
 	rr := r.PathPrefix("/api").Subrouter()
