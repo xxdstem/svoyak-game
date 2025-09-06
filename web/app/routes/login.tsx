@@ -14,7 +14,7 @@ export default function Login() {
   const navigate = useNavigate();
   const theme = useTheme();
 
-  const [nickname, setNick] = useState<string>("");
+  const [nickname, setNick] = useState<string>(localStorage.getItem("username") ?? "");
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
