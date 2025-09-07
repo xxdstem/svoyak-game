@@ -9,6 +9,7 @@ type User struct {
 	UserName  string
 	Color     string
 	Mutex     sync.RWMutex
+	Token     string
 }
 
 type RoomStats struct {

@@ -1,12 +1,16 @@
 package user
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"net/http"
 	"svoyak/internal/entity"
 	"svoyak/internal/utils"
 	"svoyak/pkg/logger"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 var log *logger.Logger
@@ -60,6 +64,8 @@ func (uc *uc) NewUser(sessionID string, name string) (*entity.User, error) {
 		return nil, errors.New("this name is already taken")
 	}
 	user := &entity.User{SessionID: sessionID, UserName: name, Mutex: sync.RWMutex{}}
+	md5 := md5.Sum([]byte(uuid.New().String()))
+	user.Token = hex.EncodeToString(md5[:])
 	user.Color = utils.RandomHexColor()
 	uc.store.Set(sessionID, user)
 	return user, nil
