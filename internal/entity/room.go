@@ -32,6 +32,8 @@ func NewRoom(name string, password string) Room {
 
 func (r *Room) Broadcast(msg websocket.Message) {
 	for _, u := range r.Players {
-		u.Ws.Send <- msg
+		if u.Ws != nil {
+			u.Ws.Send <- msg
+		}
 	}
 }
