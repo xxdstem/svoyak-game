@@ -11,7 +11,7 @@ import {
 
 import type { CurrentQuestion, GameData, Package, Question, RoomPlayer} from './types';
 
-import { QuestionDialog } from './QustionDialog';
+import { QuestionDialog } from './QuestionDialog';
 import { Players } from './Players';
 import { HostBar } from './HostBar';
 import http from '~/utils/axios';

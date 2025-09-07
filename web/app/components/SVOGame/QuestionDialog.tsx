@@ -22,7 +22,6 @@ export const QuestionDialog: React.FC<Props> = (props) => {
 
     const currentPlayer = useMemo<RoomPlayer | undefined>(()=>room?.players.find(p=>p.id == user?.session_id), [room]);
     
-    const imgRef = useRef<HTMLImageElement>(null);
     // Получение текста вопроса
     const getQuestionText = (question: Question) => {
         const questionParams = question.Params.find(p => p.Name === 'question');
@@ -45,8 +44,14 @@ export const QuestionDialog: React.FC<Props> = (props) => {
 
     // Получение медиа (изображения/аудио) вопроса
     const getQuestionMedia = useCallback((question: Question) => {
-        const questionParams = question.Params.find(p => p.Name === (showAnswer ? 'answer' : 'question'))
-        if (!questionParams) return null;
+        let questionParams;
+        if(showAnswer){
+            questionParams = question.Params.find(p => p.Name === 'answer')
+        }
+        if(!questionParams){
+            questionParams = question.Params.find(p => p.Name === 'question')
+            if (!questionParams) return null;
+        }
 
         return questionParams.Items.find(item => ['image', 'audio'].includes(item.Type));
     },[showAnswer]);
@@ -67,19 +72,23 @@ export const QuestionDialog: React.FC<Props> = (props) => {
         }}>
             {gameTheme.Name} за {question.Price}
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{pt: '16px !important'}}>
             <Box sx={{ display: 'flex', alignItems:"center",
-                 flexDirection:"column", justifyContent: 'center'}}>
-            {media && <>
-                {media.Type === 'image' && (
+                flexDirection:"column", justifyContent: 'center'}}>
+                {(questionText || !media) && (
+                    <Typography variant="h4" mb={1} align="center" gutterBottom>
+                        {questionText}
+                    </Typography>
+                )}
+                {media && <>
+                    {media.Type === 'image' && (
                         <img
-                        ref={imgRef}
                         src={`http://localhost:8080/files/${room.package_id}/Images/${encodeURIComponent(encodeURIComponent(media.Content))}`}
                         alt="Question media" 
                         style={{ maxWidth: '90%', maxHeight: '70vh' }} 
                         />
                     )}
-                    
+                        
                     {media.Type === 'audio' && (<>
                         <audio style={{display:"none"}} controls autoPlay>
                         <source src={`http://localhost:8080/files/${room.package_id}/Audio/${encodeURIComponent(encodeURIComponent(media.Content))}`} type="audio/mpeg" />
@@ -87,38 +96,28 @@ export const QuestionDialog: React.FC<Props> = (props) => {
                         </audio>
                         <MusicIcon/></>
                     )}
-            </>}
-            {!media && showAnswer && imgRef && <div style={{display: "flex", minHeight:'300px', width: imgRef.current?.width, height: imgRef.current?.height}}>
-                <Typography style={{margin: "auto", fontSize: "60px", lineHeight: 1, textAlign: "center"}} variant="h1">
-                    {answerText}
-                </Typography>
-                </div>}
-            
-            {questionText && !showAnswer && (
-            <Typography variant="h4" mt={2} gutterBottom>
-                {questionText}
-            </Typography>
-            )}
-            
+                </>}
+                
+                
             </Box>
         </DialogContent>
-         <DialogActions sx={{ 
+        <DialogActions sx={{ 
             minHeight: 74,
             justifyContent: 'space-between', 
             padding: 2,
             backgroundColor: theme.palette.background.default,
         }}>
-           
-                {currentPlayer?.room_stats.Role == "host" && !showAnswer && (<Button
-                onClick={()=>setShowAnswer(true)} 
-                color="primary" 
-                variant="contained"
-                >
-                Показать ответ
-                </Button>)}
-                {media && showAnswer && <Typography style={{margin: "auto"}} variant="h1">
-                    {answerText}
-                </Typography>}
+        
+            {currentPlayer?.room_stats.Role == "host" && !showAnswer && (<Button
+            onClick={()=>setShowAnswer(true)} 
+            color="primary" 
+            variant="contained"
+            >
+            Показать ответ
+            </Button>)}
+            {showAnswer && <Typography style={{margin: "auto"}} variant="h1">
+                {answerText}
+            </Typography>}
         </DialogActions>
         </>
     );
