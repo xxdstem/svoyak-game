@@ -10,6 +10,7 @@ import { store } from './store/store.ts';
 import routes from './routes.ts';
 import NotFound from './routes/404.tsx';
 import Loader from './loader.ts'
+import WebSocketProvider from './providers/websocketProvider.tsX';
 export const router = createBrowserRouter([{
   path: "/",
 	Component: Layout,
@@ -23,7 +24,9 @@ createRoot(document.getElementById('root')).render(
     <ThemeProvider theme={basedarkTheme}>
     <CssBaseline />
     <Provider store={store}>
-      <RouterProvider router={router} />
+      <WebSocketProvider>
+        <RouterProvider router={router} />
+      </WebSocketProvider>
     </Provider>
     </ThemeProvider>
   </StrictMode>,

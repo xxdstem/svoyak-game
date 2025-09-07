@@ -8,6 +8,7 @@ import { Box, Container, CssBaseline, styled, ThemeProvider } from "@mui/materia
 import { useSelector } from 'react-redux';
 import { useLocation, Navigate } from 'react-router';
 import { $currentUser } from "~/store/user";
+import { useEffect } from "react";
 
 
 const MainWrapper = styled("div")(() => ({
@@ -34,16 +35,17 @@ export default function Layout(props:any) {
     return <Navigate to="/login" replace />;
   }
 
-  return (<>
-          <MainWrapper className="mainwrapper">
-              <PageWrapper className="page-wrapper">
-                <Header/>
-                    <Box sx={{ minHeight: "calc(100vh - 170px)" }}>
-                      {props.children ?? null}
-                      <Outlet/>
-                    </Box>
-              </PageWrapper>
-          </MainWrapper>
-        </>
+  return (
+    <>
+      <MainWrapper className="mainwrapper">
+          <PageWrapper className="page-wrapper">
+            <Header/>
+              <Box sx={{ minHeight: "calc(100vh - 170px)" }}>
+                {props.children ?? null}
+                <Outlet/>
+              </Box>
+          </PageWrapper>
+      </MainWrapper>
+    </>
   );
 }

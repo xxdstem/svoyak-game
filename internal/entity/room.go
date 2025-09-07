@@ -2,6 +2,7 @@ package entity
 
 import (
 	"svoyak/internal/models"
+	"svoyak/pkg/websocket"
 
 	"github.com/google/uuid"
 )
@@ -26,5 +27,11 @@ func NewRoom(name string, password string) Room {
 		Password:   password,
 		PlayersMax: 4,
 		Players:    make(map[string]*User),
+	}
+}
+
+func (r *Room) Broadcast(msg websocket.Message) {
+	for _, u := range r.Players {
+		u.Ws.Send <- msg
 	}
 }

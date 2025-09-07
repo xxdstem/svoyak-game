@@ -35,3 +35,12 @@ func (s *store) FindByName(name string) *entity.User {
 	}
 	return nil
 }
+
+func (s *store) FindUserByToken(token string) *entity.User {
+	for _, user := range s.data {
+		if user.Token == token {
+			return user
+		}
+	}
+	return nil
+}

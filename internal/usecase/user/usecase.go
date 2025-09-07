@@ -6,8 +6,10 @@ import (
 	"errors"
 	"net/http"
 	"svoyak/internal/entity"
+	"svoyak/internal/entity/dto"
 	"svoyak/internal/utils"
 	"svoyak/pkg/logger"
+	"svoyak/pkg/websocket"
 	"sync"
 
 	"github.com/google/uuid"
@@ -56,6 +58,10 @@ func (uc *uc) JoinRoom(user *entity.User, roomID string) error {
 	room.Players[user.SessionID] = user
 	user.RoomStats = &entity.RoomStats{}
 	user.Room = room
+	user.Room.Broadcast(websocket.Message{
+		Type:    "joined_user",
+		Payload: dto.RoomPlayerResponse(user),
+	})
 	return nil
 }
 

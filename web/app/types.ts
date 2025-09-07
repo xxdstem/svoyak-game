@@ -1,9 +1,10 @@
 import type { Package, RoomDetails } from "./components/SVOGame/types";
 
 export type User = {
-    username: string;
-    session_id: string;
-    room_id: string;
+    username?: string;
+    session_id?: string;
+    room_id?: string;
+    token?: string;
 }
 
 export type Room = {
@@ -19,4 +20,9 @@ export type Room = {
 export type StoreState = {
     user: User | null;
     room: RoomDetails;
+}
+
+export type WsMessage = {
+    type: string;
+    payload: any;
 }

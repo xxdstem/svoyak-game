@@ -5,9 +5,10 @@ import (
 	"svoyak/internal/entity"
 )
 
-type userResponse struct {
+type userIdentifyResponse struct {
 	SessionID string `json:"session_id"`
 	RoomID    string `json:"room_id"`
+	Token     string `json:"token"`
 	UserName  string `json:"username"`
 }
 type roomPlayerResponse struct {
@@ -26,13 +27,14 @@ func RoomPlayerResponse(user *entity.User) roomPlayerResponse {
 	}
 }
 
-func UserResponse(user *entity.User) userResponse {
+func UserIdentifyResponse(user *entity.User) userIdentifyResponse {
 	var roomID string
 	if user.Room != nil {
 		roomID = user.Room.ID
 	}
-	return userResponse{
+	return userIdentifyResponse{
 		SessionID: user.SessionID,
+		Token:     user.Token,
 		RoomID:    roomID,
 		UserName:  user.UserName,
 	}

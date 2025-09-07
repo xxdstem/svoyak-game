@@ -66,7 +66,7 @@ func (h *handler) Register(router *mux.Router) {
 func (h *handler) GetIdentify(w http.ResponseWriter, r *http.Request) {
 	user := h.uuc.GetUser(r)
 	if user != nil {
-		j, _ := json.Marshal(dto.UserResponse(user))
+		j, _ := json.Marshal(dto.UserIdentifyResponse(user))
 		w.Write(j)
 		return
 	}
@@ -82,7 +82,7 @@ func (h *handler) SetIdentify(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	j, _ := json.Marshal(dto.UserResponse(user))
+	j, _ := json.Marshal(dto.UserIdentifyResponse(user))
 	w.Write(j)
 }
 

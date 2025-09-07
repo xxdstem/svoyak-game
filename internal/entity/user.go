@@ -1,6 +1,9 @@
 package entity
 
-import "sync"
+import (
+	"svoyak/pkg/websocket"
+	"sync"
+)
 
 type User struct {
 	SessionID string
@@ -10,6 +13,7 @@ type User struct {
 	Color     string
 	Mutex     sync.RWMutex
 	Token     string
+	Ws        *websocket.Client
 }
 
 type RoomStats struct {

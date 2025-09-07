@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"os"
 	api "svoyak/internal/controllers/http"
+	wsController "svoyak/internal/controllers/websocket"
+
 	"svoyak/internal/store"
 	"svoyak/internal/usecase/game"
 	"svoyak/internal/usecase/room"
@@ -13,6 +15,7 @@ import (
 	fileservice "svoyak/pkg/fileService"
 	"svoyak/pkg/logger"
 	spaHandler "svoyak/pkg/spaHandler"
+	"svoyak/pkg/websocket"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -23,9 +26,13 @@ func Run(log *logger.Logger) {
 	os.RemoveAll("./temp/")
 	store := store.New()
 
+	wsServer := websocket.NewWebSocketServer()
+	go wsServer.Run()
+
 	gameUseCase := game.New(log, store)
 	roomUseCase := room.New(log, store, gameUseCase, fileservice.New())
 	userUseCase := user.New(log, store, roomUseCase)
+	wsHandler := wsController.NewWSHandler(wsServer, store)
 	r := mux.NewRouter()
 	apiRouter := api.New(log, userUseCase, roomUseCase, gameUseCase)
 	rr := r.PathPrefix("/api").Subrouter()
@@ -35,7 +42,7 @@ func Run(log *logger.Logger) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`Route not found!`))
 	})
-
+	r.HandleFunc("/ws", wsHandler.HandleWebSocket)
 	r.HandleFunc("/files/{packageID}/{fileType}/{file}", filehandler.Handle)
 	r.PathPrefix("/").HandlerFunc(spaHandler.Handle)
 
