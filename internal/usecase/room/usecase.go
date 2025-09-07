@@ -10,6 +10,9 @@ import (
 	"svoyak/internal/models"
 	"svoyak/pkg/logger"
 	"svoyak/pkg/websocket"
+
+	"github.com/ahmetb/go-linq/v3"
+	. "github.com/ahmetb/go-linq/v3"
 )
 
 const (
@@ -106,11 +109,16 @@ func (uc *uc) LeaveRoom(user *entity.User) error {
 	}
 	return nil
 }
-func (uc *uc) ListRooms() []*entity.Room {
-	rooms := make([]*entity.Room, 0, len(uc.rooms))
+func (uc *uc) ListAvailableRooms() []*entity.Room {
+	var rooms []*entity.Room
 	for _, room := range uc.rooms {
 		rooms = append(rooms, room)
 	}
+	From(uc.rooms).SelectT(func(kv linq.KeyValue) *entity.Room {
+		return kv.Value.(*entity.Room)
+	}).WhereT(func(r *entity.Room) bool {
+		return !r.IsStarted
+	}).ToSlice(&rooms)
 	return rooms
 }
 

@@ -26,7 +26,7 @@ type UserUseCase interface {
 type RoomUseCase interface {
 	CreateGame(user *entity.User, req *dto.CreateGameRequest) (*entity.Room, error)
 	LeaveRoom(user *entity.User) error
-	ListRooms() []*entity.Room
+	ListAvailableRooms() []*entity.Room
 	GetRoom(roomID string) (*entity.Room, error)
 	AbortRoom(room *entity.Room) error
 	SetPlayerRole(player *entity.User, role string) error
@@ -101,7 +101,7 @@ func (h *handler) ListRooms(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Non authorized", http.StatusUnauthorized)
 		return
 	}
-	rooms := h.ruc.ListRooms()
+	rooms := h.ruc.ListAvailableRooms()
 
 	jsonData, err := json.Marshal(dto.ListRoomsToDto(rooms))
 	if err == nil {
