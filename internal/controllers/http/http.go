@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"svoyak/internal/entity"
@@ -17,6 +18,7 @@ type Handler interface {
 
 type UserUseCase interface {
 	NewUser(sessionID string, name string) (*entity.User, error)
+	JoinRoom(user *entity.User, roomID string) error
 	GetUser(r *http.Request) *entity.User
 	Logout(r *http.Request) error
 }
@@ -24,7 +26,6 @@ type UserUseCase interface {
 type RoomUseCase interface {
 	CreateGame(user *entity.User, req *dto.CreateGameRequest) (*entity.Room, error)
 	LeaveRoom(user *entity.User) error
-	JoinRoom(user *entity.User, roomID string) error
 	ListRooms() []*entity.Room
 	GetRoom(roomID string) (*entity.Room, error)
 	AbortRoom(room *entity.Room) error
@@ -146,6 +147,8 @@ func (h *handler) GameData(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	user := h.uuc.GetUser(r)
+	user.Mutex.Lock()
+	defer user.Mutex.Unlock()
 	if user == nil {
 		http.Error(w, "Non authorized", http.StatusUnauthorized)
 		return
@@ -165,13 +168,15 @@ func (h *handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Wrong password!", http.StatusUnauthorized)
 		return
 	}
-	h.ruc.JoinRoom(user, id)
+	h.uuc.JoinRoom(user, id)
 	j, _ := json.Marshal(dto.RoomCreationResponse(room))
 	w.Write(j)
 }
 
 func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	user := h.uuc.GetUser(r)
+	user.Mutex.Lock()
+	defer user.Mutex.Unlock()
 	if user == nil {
 		http.Error(w, "Non authorized", http.StatusUnauthorized)
 		return
@@ -200,6 +205,10 @@ func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	room, err := h.ruc.CreateGame(user, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err := h.uuc.JoinRoom(user, room.ID); err != nil {
+		http.Error(w, fmt.Sprintf("failed to join room: %w", err), http.StatusBadRequest)
 		return
 	}
 	j, _ := json.Marshal(dto.RoomCreationResponse(room))

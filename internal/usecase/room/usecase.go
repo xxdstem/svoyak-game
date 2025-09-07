@@ -59,10 +59,6 @@ func (uc *uc) CreateGame(user *entity.User, req *dto.CreateGameRequest) (*entity
 
 	room.Package = *pkg
 
-	if err := uc.JoinRoom(user, room.ID); err != nil {
-		return nil, fmt.Errorf("failed to join room: %w", err)
-	}
-
 	return room, nil
 }
 
@@ -88,20 +84,6 @@ func (uc *uc) GetRoom(roomID string) (*entity.Room, error) {
 		return nil, errors.New("room not found")
 	}
 	return room, nil
-}
-
-func (uc *uc) JoinRoom(user *entity.User, roomID string) error {
-	room, ok := uc.rooms[roomID]
-	if !ok {
-		return errors.New("room not found")
-	}
-	if room.PlayersMax == len(room.Players) {
-		return errors.New("room is full")
-	}
-	room.Players[user.SessionID] = user
-	user.RoomStats = &entity.RoomStats{}
-	user.Room = room
-	return nil
 }
 
 func (uc *uc) LeaveRoom(user *entity.User) error {

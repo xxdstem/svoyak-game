@@ -6,6 +6,7 @@ import (
 	"svoyak/internal/entity"
 	"svoyak/internal/utils"
 	"svoyak/pkg/logger"
+	"sync"
 )
 
 var log *logger.Logger
@@ -17,13 +18,18 @@ type Store interface {
 	FindByName(name string) *entity.User
 }
 
-type uc struct {
-	store Store
+type RoomUseCase interface {
+	GetRoom(roomID string) (*entity.Room, error)
 }
 
-func New(l *logger.Logger, store Store) *uc {
+type uc struct {
+	store Store
+	ruc   RoomUseCase
+}
+
+func New(l *logger.Logger, store Store, ruc RoomUseCase) *uc {
 	log = l
-	return &uc{store: store}
+	return &uc{store, ruc}
 }
 
 func (uc *uc) GetUser(r *http.Request) *entity.User {
@@ -35,11 +41,25 @@ func (uc *uc) GetUser(r *http.Request) *entity.User {
 	return user
 }
 
+func (uc *uc) JoinRoom(user *entity.User, roomID string) error {
+	room, err := uc.ruc.GetRoom(roomID)
+	if err != nil {
+		return err
+	}
+	if room.PlayersMax == len(room.Players) {
+		return errors.New("room is full")
+	}
+	room.Players[user.SessionID] = user
+	user.RoomStats = &entity.RoomStats{}
+	user.Room = room
+	return nil
+}
+
 func (uc *uc) NewUser(sessionID string, name string) (*entity.User, error) {
 	if uc.store.FindByName(name) != nil {
 		return nil, errors.New("this name is already taken")
 	}
-	user := &entity.User{SessionID: sessionID, UserName: name}
+	user := &entity.User{SessionID: sessionID, UserName: name, Mutex: sync.RWMutex{}}
 	user.Color = utils.RandomHexColor()
 	uc.store.Set(sessionID, user)
 	return user, nil

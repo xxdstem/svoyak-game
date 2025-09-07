@@ -23,9 +23,9 @@ func Run(log *logger.Logger) {
 	os.RemoveAll("./temp/")
 	store := store.New()
 
-	userUseCase := user.New(log, store)
 	gameUseCase := game.New(log, store)
 	roomUseCase := room.New(log, store, gameUseCase, fileservice.New())
+	userUseCase := user.New(log, store, roomUseCase)
 	r := mux.NewRouter()
 	apiRouter := api.New(log, userUseCase, roomUseCase, gameUseCase)
 	rr := r.PathPrefix("/api").Subrouter()
