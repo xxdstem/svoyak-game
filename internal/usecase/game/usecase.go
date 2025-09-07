@@ -4,9 +4,11 @@ import (
 	"errors"
 	"math/rand"
 	"svoyak/internal/entity"
+	"svoyak/internal/entity/dto"
 	"svoyak/internal/models"
 	"svoyak/pkg/logger"
 	"svoyak/pkg/parser"
+	"svoyak/pkg/websocket"
 
 	. "github.com/ahmetb/go-linq/v3"
 )
@@ -65,5 +67,9 @@ func (uc *uc) StartGame(room *entity.Room) error {
 	}
 	rndPlayer := players[rand.Intn(len(players))]
 	rndPlayer.RoomStats.QuestionPicker = true
+	room.Broadcast(websocket.Message{
+		Type:    "updated_room",
+		Payload: dto.RoomDetailedResponse(room),
+	})
 	return nil
 }

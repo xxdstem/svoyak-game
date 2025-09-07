@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { StoreState, User } from '~/types';
+import type { RootState, User } from '~/types';
 
 
 
@@ -32,6 +32,6 @@ const userSlice = createSlice({
 });
 
 export const { setUser, clearUser, leaveRoom, joinRoom } = userSlice.actions;
-export const $currentUser = (state: StoreState) => state.user;
+export const $currentUser = (state: RootState) => state.user;
 
 export default userSlice.reducer;

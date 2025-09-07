@@ -58,9 +58,9 @@ func (uc *uc) JoinRoom(user *entity.User, roomID string) error {
 	room.Players[user.SessionID] = user
 	user.RoomStats = &entity.RoomStats{}
 	user.Room = room
-	user.Room.Broadcast(websocket.Message{
-		Type:    "joined_user",
-		Payload: dto.RoomPlayerResponse(user),
+	room.Broadcast(websocket.Message{
+		Type:    "updated_room",
+		Payload: dto.RoomDetailedResponse(room),
 	})
 	return nil
 }

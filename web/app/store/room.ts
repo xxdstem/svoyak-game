@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { Package, RoomDetails } from '~/components/SVOGame/types';
-import type { StoreState } from '~/types';
+import type { RootState } from '~/types';
 
 
 
@@ -28,6 +28,6 @@ const roomSlice = createSlice({
 });
 
 export const { setRoomData, setRoleForUser } = roomSlice.actions;
-export const $room = (state: StoreState) => state.room;
+export const $room = (state: RootState) => state.room;
 
 export default roomSlice.reducer;

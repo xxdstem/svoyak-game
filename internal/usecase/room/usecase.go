@@ -9,6 +9,7 @@ import (
 	"svoyak/internal/entity/dto"
 	"svoyak/internal/models"
 	"svoyak/pkg/logger"
+	"svoyak/pkg/websocket"
 )
 
 const (
@@ -95,6 +96,10 @@ func (uc *uc) LeaveRoom(user *entity.User) error {
 	delete(room.Players, user.SessionID)
 	user.Room = nil
 	user.RoomStats = nil
+	room.Broadcast(websocket.Message{
+		Type:    "updated_room",
+		Payload: dto.RoomDetailedResponse(room),
+	})
 	if len(room.Players) == 0 {
 		log.Info("Aborting room!")
 		uc.AbortRoom(room)
@@ -134,6 +139,10 @@ func (uc *uc) SetPlayerRole(player *entity.User, role string) error {
 		}
 	}
 	player.RoomStats.Role = role
+	player.Room.Broadcast(websocket.Message{
+		Type:    "updated_room",
+		Payload: dto.RoomDetailedResponse(player.Room),
+	})
 	return nil
 }
 

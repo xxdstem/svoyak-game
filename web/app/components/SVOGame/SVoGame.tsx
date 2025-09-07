@@ -18,6 +18,7 @@ import http from '~/utils/axios';
 import { $room, setRoomData } from '~/store/room';
 import { useDispatch, useSelector } from 'react-redux';
 import { $currentUser } from '~/store/user';
+import { useWebSocketMessages } from '~/hooks/websocketHook';
 
 export const Game: React.FC<{pkg: Package}> = (state) => {
     const { pkg } = state
@@ -27,6 +28,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
 
     const theme = useTheme();
     const dispatch = useDispatch();
+    const { subscribe } = useWebSocketMessages();
     const room = useSelector($room);
     const user = useSelector($currentUser);
 
@@ -77,6 +79,12 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
       }, 5000);
       
       return () => clearInterval(timer);
+    }, []);
+
+    useEffect(()=>{
+      subscribe("updated_room", (roomData)=>{
+        dispatch(setRoomData({ ...roomData}))
+      })
     }, [])
 
     const questionBox = (<>

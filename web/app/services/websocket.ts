@@ -1,12 +1,12 @@
 import type { WsMessage } from "~/types";
 
-// src/services/websocketService.ts
+type MessageHandler = (message: WsMessage) => void
 class WebSocketService {
   private socket: WebSocket | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectInterval = 3000;
-  private messageHandlers: Record<string, (message: WsMessage) => void> = {};
+  private handlers: Record<string, MessageHandler[]> = {};
 
   connect(token: string) {
     try {
@@ -20,8 +20,7 @@ class WebSocketService {
       this.socket.onmessage = (event) => {
         try {
           const message: WsMessage = JSON.parse(event.data);
-          const handler = this.messageHandlers[message.type]
-          if(handler) handler(message)
+          this.handleMessage(message)
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
         }
@@ -51,14 +50,38 @@ class WebSocketService {
     }
   }
 
-  send(message: any) {
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify(message));
+  private handleMessage(message: WsMessage) {
+    const { type, payload } = message;
+    
+    if (this.handlers[type]) {
+      this.handlers[type].forEach(handler => handler(payload));
+    }
+    
+    // Глобальные обработчики для всех сообщений
+    if (this.handlers['*']) {
+      this.handlers['*'].forEach(handler => handler(message));
     }
   }
 
-  addMessageHandler(type:string, handler: (message: WsMessage) => void) {
-    this.messageHandlers[type] = handler;
+  on(messageType: string, handler: MessageHandler) {
+    if (!this.handlers[messageType]) {
+      this.handlers[messageType] = [];
+    }
+    this.handlers[messageType].push(handler);
+  }
+
+  off(messageType: string, handler: MessageHandler) {
+    if (this.handlers[messageType]) {
+      this.handlers[messageType] = this.handlers[messageType].filter(
+        h => h !== handler
+      );
+    }
+  }
+
+  send(message: WsMessage) {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify(message));
+    }
   }
 
   disconnect() {
@@ -66,7 +89,7 @@ class WebSocketService {
       this.socket.close();
       this.socket = null;
     }
-    this.messageHandlers = {};
+    this.handlers = {};
   }
 
   getStatus() {
