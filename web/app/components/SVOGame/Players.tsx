@@ -1,6 +1,6 @@
 import { Avatar, Box, Button, Paper, Typography, useTheme } from "@mui/material"
 import { useDispatch, useSelector } from "react-redux";
-import { $room, setRoleForUser, setRoomData } from "~/store/room";
+import { $room, setRoomData } from "~/store/room";
 import { type RoomDetails, type RoomPlayer } from "./types";
 import { useMemo } from "react";
 import { $currentUser } from "~/store/user";
@@ -15,7 +15,7 @@ export const Players: React.FC = () => {
     const user = useSelector($currentUser);
     const room = useSelector($room);
 
-    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p => p != null && p.id == user?.session_id), [room]);
+    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p => p && p.id == user?.session_id), [room]);
     
 
     const joinAsUser = async (slotId: number) => {
@@ -27,8 +27,6 @@ export const Players: React.FC = () => {
         } catch(e) {
           console.error(e)
         }
-          
-        //dispatch(setRoleForUser({user_id: user?.session_id, role: "player"}))
     }
     
     return <Box sx={{ 
@@ -44,7 +42,7 @@ export const Players: React.FC = () => {
       }}>
         {Object.entries(room.players)
           .filter(([slot]) => parseInt(slot) >= 0)
-          .map(([slot, player]) => player == null ? (
+          .map(([slot, player]) => !player ? !room.is_started && (
             <Paper key={slot} onClick={()=>joinAsUser(parseInt(slot))}
               elevation={3} sx={{ 
               padding: 2,
@@ -71,7 +69,7 @@ export const Players: React.FC = () => {
               </Box>
             </Paper>
           ) :
-            <Paper key={slot} elevation={3} sx={{ 
+            <Paper key={slot} elevation={1} sx={{ 
               padding: 2,
               minWidth: 150,
               backgroundColor: player.color,

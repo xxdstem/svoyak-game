@@ -17,7 +17,7 @@ const Header = () => {
   const logout = ()=>{
     http.post("/logout")
     dispatch(clearUser());
-    navigate("/")
+    navigate("/login")
   }
   const currentUser = useSelector($currentUser);
   const AppBarStyled = styled(AppBar)(({ theme }) => ({

@@ -14,7 +14,6 @@ import type { CurrentQuestion, GameData, Package, Question, RoomPlayer} from './
 import { QuestionDialog } from './QuestionDialog';
 import { Players } from './Players';
 import { HostBar } from './HostBar';
-import http from '~/utils/axios';
 import { $room, setRoomData } from '~/store/room';
 import { useDispatch, useSelector } from 'react-redux';
 import { $currentUser } from '~/store/user';
@@ -30,20 +29,22 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     const dispatch = useDispatch();
     const { subscribe, sendMessage } = useWebSocketMessages();
     const room = useSelector($room);
+    
     const user = useSelector($currentUser);
-
-    const [currentRound, setCurrentRound] = useState(0);
+    const [currentRound, setCurrentRound] = useState(room.current_round);
     const [currentQuestion, setCurrentQuestion] = useState < CurrentQuestion | null > (null);
 
-    const gameData = useMemo<GameData>(()=>rounds[currentRound], [rounds, currentRound]);
-    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p => p != null && p.id == user?.session_id), [room]);
+    const gameData = rounds[currentRound];
+
+    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p => p && p.id == user?.session_id), [room.players]);
         
-    const themes = useMemo(()=>gameData.Themes.map(theme => ({
-      ...theme,
-      Questions: theme.Questions.map(question => ({
-          ...question
-      }))
-    })),[gameData])
+    
+    const [themes, setThemesState] = useState(Object.assign({}, gameData).Themes);
+
+    useEffect(() => {
+      setThemesState(Object.assign({}, gameData).Themes);
+    }, [gameData]);
+
 
     const availableQuestion = useCallback((question: Question)=>{
       return !question.IsAnswered && ( currentPlayer != null && (
@@ -81,24 +82,32 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     // }, []);
 
     useEffect(()=>{
+       console.log("подписька")
       return subscribe("updated_room", (roomData) => {
-        console.log("test")
-        dispatch(setRoomData({ ...roomData }))
+        dispatch(setRoomData(roomData))
       })
-    }, [])
+    }, [subscribe, dispatch])
 
     useEffect(()=>{
       return subscribe("select_question", (data) => {
         const { themeIndex, questionIndex } = data;
-        var question = themes[themeIndex].Questions[questionIndex];
-        console.log("открываем вопрос...")
-        if(!question || !availableQuestion(question)) return;
-        
-        question.IsAnswered = true;
-        setCurrentQuestion({themeIndex, question});
-        
+        setThemesState(prev => {
+          const newThemes = prev.map((theme, tIdx) => {
+            if (tIdx !== themeIndex) return theme;
+            return {
+              ...theme,
+              Questions: theme.Questions.map((q, qIdx) =>
+                qIdx === questionIndex ? { ...q, IsAnswered: true } : q
+              )
+            };
+          });
+          // Открываем диалог с вопросом
+          const question = newThemes[themeIndex].Questions[questionIndex];
+          setCurrentQuestion({ themeIndex, question });
+          return newThemes;
+        });
       })
-    },[])
+    },[subscribe, dispatch])
 
     const questionBox = (<>
       <Typography variant="h2" align="center" gutterBottom sx={{ marginBottom: 3 }}>

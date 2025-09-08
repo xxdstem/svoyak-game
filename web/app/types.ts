@@ -11,7 +11,6 @@ export type Room = {
     id: string;
     name: string;
     with_password: string;
-    package_id: string;
     package_name: string;
     players_max: number;
     players_count: number;

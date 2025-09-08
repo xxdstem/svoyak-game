@@ -13,7 +13,6 @@ class WebSocketService {
       this.socket = new WebSocket(`ws://localhost:8080/ws?token=${token}`);
 
       this.socket.onopen = () => {
-        console.log('WebSocket connected');
         this.reconnectAttempts = 0;
       };
 
@@ -27,7 +26,6 @@ class WebSocketService {
       };
 
       this.socket.onclose = () => {
-        console.log('WebSocket disconnected');
         this.attemptReconnect(token);
       };
 
@@ -44,7 +42,6 @@ class WebSocketService {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       setTimeout(() => {
-        console.log(`Reconnecting attempt ${this.reconnectAttempts}`);
         this.connect(token);
       }, this.reconnectInterval);
     }

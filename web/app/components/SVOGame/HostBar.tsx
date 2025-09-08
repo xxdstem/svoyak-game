@@ -17,11 +17,11 @@ export const HostBar: React.FC = () => {
     const user = useSelector($currentUser);
 
     const host = useMemo<RoomPlayer | undefined>(
-      ()=> Object.values(room.players).find(p =>p != null && p.room_stats.Role == "host"), [room]);
+      ()=> Object.values(room.players).find(p => p && p.room_stats.Role == "host"), [room]);
     const currentPlayer = useMemo<RoomPlayer | undefined>(
-      () => Object.values(room.players).find(p => p != null && p.id == user?.session_id), [room]);
+      () => Object.values(room.players).find(p => p && p.id == user?.session_id), [room]);
     
-    const readyToStart = useMemo<boolean>(()=> Object.values(room.players).filter(p => p != null && p.room_stats.Role == "player").length > 0, [room])
+    const readyToStart = useMemo<boolean>(()=> Object.values(room.players).filter(p => p && p.room_stats.Role == "player").length > 0, [room])
 
     const handleAbortGame = async () =>{
       if(window.confirm("Вы уверены?")){
@@ -40,7 +40,6 @@ export const HostBar: React.FC = () => {
       } catch(e) {
         console.error(e)
       }
-      //dispatch(setRoleForUser({user_id: user?.session_id, role: "host"}))
     }
 
     const pauseUnpause = async () => {

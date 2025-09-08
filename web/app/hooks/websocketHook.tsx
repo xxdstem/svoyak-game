@@ -11,11 +11,11 @@ export const useWebSocketMessages = () => {
     return () => {
       webSocketService.off(messageType, handler);
     };
-  }, []);
+  }, [webSocketService]);
 
   const sendMessage = useCallback((type: string, payload: any) => {
     webSocketService.send({ type, payload });
-  }, []);
+  }, [webSocketService]);
 
   return { subscribe, sendMessage };
 };
