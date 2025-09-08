@@ -30,7 +30,7 @@ export type Question = {
   Right: {
     Answers: string[];
   };
-  isAnswered?: boolean;
+  IsAnswered?: boolean;
 };
 
 export type Theme = {

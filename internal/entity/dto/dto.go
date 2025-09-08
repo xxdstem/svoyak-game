@@ -41,25 +41,27 @@ func UserIdentifyResponse(user *entity.User) userIdentifyResponse {
 }
 
 type roomDetailedResponse struct {
-	ID          string               `json:"id"`
-	Name        string               `json:"name"`
-	PackageID   string               `json:"package_id"`
-	PackageName string               `json:"package_name"`
-	PlayersMax  int                  `json:"players_max"`
-	IsStarted   bool                 `json:"is_started"`
-	IsPaused    bool                 `json:"is_paused"`
-	Players     []roomPlayerResponse `json:"players"`
+	ID           string               `json:"id"`
+	Name         string               `json:"name"`
+	PackageID    string               `json:"package_id"`
+	PackageName  string               `json:"package_name"`
+	PlayersMax   int                  `json:"players_max"`
+	CurrentRound int                  `json:"current_round"`
+	IsStarted    bool                 `json:"is_started"`
+	IsPaused     bool                 `json:"is_paused"`
+	Players      []roomPlayerResponse `json:"players"`
 }
 
 func RoomDetailedResponse(room *entity.Room) roomDetailedResponse {
 	resp := roomDetailedResponse{
-		ID:          room.ID,
-		Name:        room.Name,
-		PackageID:   room.Package.PackageID,
-		PackageName: room.Package.Name,
-		IsStarted:   room.IsStarted,
-		IsPaused:    room.IsPaused,
-		PlayersMax:  room.PlayersMax,
+		ID:           room.ID,
+		Name:         room.Name,
+		PackageID:    room.Package.PackageID,
+		CurrentRound: room.CurrentRound,
+		PackageName:  room.Package.Name,
+		IsStarted:    room.IsStarted,
+		IsPaused:     room.IsPaused,
+		PlayersMax:   room.PlayersMax,
 	}
 	players := make([]roomPlayerResponse, 0)
 	for _, player := range room.Players {

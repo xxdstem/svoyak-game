@@ -73,3 +73,8 @@ func (uc *uc) StartGame(room *entity.Room) error {
 	})
 	return nil
 }
+
+func (uc *uc) SelectQustion(room *entity.Room, themeIdx int, questionIdx int) {
+	currentRound := room.Package.Rounds[room.CurrentRound]
+	currentRound.Themes[themeIdx].Questions[questionIdx].IsAnswered = true
+}

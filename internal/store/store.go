@@ -44,3 +44,12 @@ func (s *store) FindUserByToken(token string) *entity.User {
 	}
 	return nil
 }
+
+func (s *store) FindUserByID(sessionID string) *entity.User {
+	for _, user := range s.data {
+		if user.SessionID == sessionID {
+			return user
+		}
+	}
+	return nil
+}

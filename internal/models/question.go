@@ -3,7 +3,7 @@ package models
 type Question struct {
 	Price      int     `xml:"price,attr"`
 	Type       string  `xml:"type,attr,omitempty"`
-	isAnswered bool    `xml:"omitempty"`
+	IsAnswered bool    `xml:"omitempty"`
 	Params     []Param `xml:"params>param"`
 	Right      Answer  `xml:"right"`
 }

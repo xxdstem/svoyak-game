@@ -28,7 +28,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
 
     const theme = useTheme();
     const dispatch = useDispatch();
-    const { subscribe } = useWebSocketMessages();
+    const { subscribe, sendMessage } = useWebSocketMessages();
     const room = useSelector($room);
     const user = useSelector($currentUser);
 
@@ -46,17 +46,16 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     })),[gameData])
 
     const availableQuestion = useCallback((question: Question)=>{
-      return !question.isAnswered && (
+      return !question.IsAnswered && (
                         currentPlayer?.room_stats.QuestionPicker
                         || currentPlayer?.room_stats.Role == "host")
     },[currentPlayer])
 
 
-    const handleQuestionClick = (themeIndex: number, question: Question) => {
-      if (availableQuestion(question)) {
-        question.isAnswered = true;
-          setCurrentQuestion({themeIndex, question});
-      }
+    const handleQuestionClick = (themeIndex: number, questionIndex: number) => {
+      var question = themes[themeIndex].Questions[questionIndex];
+      if(!question || !availableQuestion(question)) return;
+      sendMessage("select_question", {themeIndex, questionIndex})
     };
 
     const nextRound = () => {
@@ -65,7 +64,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
 
     const handleCloseQuestion = useCallback(() => {
       setCurrentQuestion(null);
-      if(themes.every(t => t.Questions.every(q => q.isAnswered))){
+      if(themes.every(t => t.Questions.every(q => q.IsAnswered))){
         nextRound();
       }
     }, [themes]);
@@ -82,10 +81,23 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     }, []);
 
     useEffect(()=>{
-      subscribe("updated_room", (roomData)=>{
+      return subscribe("updated_room", (roomData) => {
         dispatch(setRoomData({ ...roomData}))
       })
     }, [])
+
+    useEffect(()=>{
+      return subscribe("select_question", (data) => {
+        const { themeIndex, questionIndex } = data;
+        const question = themes[themeIndex].Questions[questionIndex];
+
+        if(!question || !availableQuestion(question)) return;
+        
+        question.IsAnswered = true;
+        setCurrentQuestion({themeIndex, question});
+        
+      })
+    },[])
 
     const questionBox = (<>
       <Typography variant="h2" align="center" gutterBottom sx={{ marginBottom: 3 }}>
@@ -126,7 +138,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
                 .map((question, questionIndex) => (
                   <Card 
                     key={questionIndex}
-                    onClick={() => handleQuestionClick(themeIndex, question)}
+                    onClick={() => handleQuestionClick(themeIndex, questionIndex)}
                     
                     sx={{ 
                       cursor: availableQuestion(question)
@@ -146,7 +158,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
                   >
                     <CardContent>
                       <Typography variant="h5" align="center">
-                        {question.isAnswered ? '' : question.Price}
+                        {question.IsAnswered ? '' : question.Price}
                       </Typography>
                     </CardContent>
                   </Card>

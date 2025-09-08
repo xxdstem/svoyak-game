@@ -8,12 +8,13 @@ import (
 )
 
 type Room struct {
-	ID         string
-	Name       string
-	Password   string
-	Package    models.Package
-	Players    map[string]*User
-	PlayersMax int
+	ID           string
+	Name         string
+	Password     string
+	Package      models.Package
+	Players      map[string]*User
+	PlayersMax   int
+	CurrentRound int
 	// Implement this as State with enums?
 	IsPaused  bool
 	IsStarted bool
