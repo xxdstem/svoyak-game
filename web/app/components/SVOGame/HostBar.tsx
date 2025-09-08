@@ -17,11 +17,11 @@ export const HostBar: React.FC = () => {
     const user = useSelector($currentUser);
 
     const host = useMemo<RoomPlayer | undefined>(
-      ()=> room.players.find(p=>p.room_stats.Role == "host"), [room]);
+      ()=> Object.values(room.players).find(p =>p != null && p.room_stats.Role == "host"), [room]);
     const currentPlayer = useMemo<RoomPlayer | undefined>(
-      () => room.players.find(p=>p.id == user?.session_id), [room]);
+      () => Object.values(room.players).find(p => p != null && p.id == user?.session_id), [room]);
     
-    const readyToStart = useMemo<boolean>(()=> room.players.filter(p=>p.room_stats.Role == "player").length > 0, [room])
+    const readyToStart = useMemo<boolean>(()=> Object.values(room.players).filter(p => p != null && p.room_stats.Role == "player").length > 0, [room])
 
     const handleAbortGame = async () =>{
       if(window.confirm("Вы уверены?")){
@@ -33,9 +33,9 @@ export const HostBar: React.FC = () => {
 
     const joinAsHost = async () => {
       var f = new FormData();
-      f.append("role", "host")
+      f.append("slotId", "-1")
       try{
-        var r = await http.patch("/room/set_role", f);
+        var r = await http.patch("/game/join", f);
         dispatch(setRoomData(r.data))
       } catch(e) {
         console.error(e)
@@ -82,7 +82,7 @@ export const HostBar: React.FC = () => {
         <Typography variant="h6" gutterBottom>
           {host.username}
         </Typography></>
-        : currentPlayer?.room_stats.Role == "" ?  <Paper key={-1} onClick={joinAsHost}
+        : !currentPlayer ?  <Paper key={-1} onClick={joinAsHost}
           elevation={3} sx={{ 
           padding: 2,
           minWidth: 150,

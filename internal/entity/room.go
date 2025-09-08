@@ -8,11 +8,13 @@ import (
 )
 
 type Room struct {
-	ID           string
-	Name         string
-	Password     string
-	Package      models.Package
-	Players      map[string]*User
+	ID       string
+	Name     string
+	Password string
+	Package  models.Package
+	Players  map[int]*User
+	// All members
+	Members      map[string]*User
 	PlayersMax   int
 	CurrentRound int
 	// Implement this as State with enums?
@@ -22,17 +24,19 @@ type Room struct {
 
 func NewRoom(name string, password string) Room {
 	id := uuid.New().String()
+	players := 4
 	return Room{
 		ID:         id,
 		Name:       name,
 		Password:   password,
-		PlayersMax: 4,
-		Players:    make(map[string]*User),
+		PlayersMax: players,
+		Players:    make(map[int]*User, players+1),
+		Members:    make(map[string]*User),
 	}
 }
 
 func (r *Room) Broadcast(msg websocket.Message) {
-	for _, u := range r.Players {
+	for _, u := range r.Members {
 		if u.Ws != nil {
 			u.Ws.Send <- msg
 		}

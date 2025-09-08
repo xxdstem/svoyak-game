@@ -17,10 +17,10 @@ const roomSlice = createSlice({
       if (state !== null) {
         const { user_id, role } = action.payload;
         
-        const existingUserIndex = state.players.findIndex(user => user.id === user_id);
+        const existingUserIndex = Object.values(state.players).findIndex(user => user.id === user_id);
         
         if (existingUserIndex !== -1) {
-          state.players[existingUserIndex].room_stats.Role = role;
+          //state.players[existingUserIndex].room_stats.Role = role;
         } 
       }
     }

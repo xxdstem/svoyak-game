@@ -15,14 +15,14 @@ export const Players: React.FC = () => {
     const user = useSelector($currentUser);
     const room = useSelector($room);
 
-    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>room?.players.find(p=>p.id == user?.session_id), [room]);
+    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p => p != null && p.id == user?.session_id), [room]);
     
 
-    const joinAsUser = async () => {
+    const joinAsUser = async (slotId: number) => {
         var f = new FormData();
-        f.append("role", "player")
+        f.append("slotId", String(slotId))
         try{
-          var r = await http.patch("/room/set_role", f);
+          var r = await http.patch("/game/join", f);
           dispatch(setRoomData(r.data))
         } catch(e) {
           console.error(e)
@@ -42,37 +42,36 @@ export const Players: React.FC = () => {
         justifyContent: 'center',
         gap: 2,
       }}>
-        {currentPlayer?.room_stats.Role == "" && (
-            <Paper key={-1} onClick={joinAsUser}
-            elevation={3} sx={{ 
-            padding: 2,
-            minWidth: 150,
-            backgroundColor: theme.palette.background.default,
-            color: "#fff",
-            cursor:"pointer"
-          }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', flexDirection:"column", alignItems: 'center' }}>
-                <Avatar sx={{ 
-                  width: 40, 
-                  height: 40, 
-                  bgcolor: 'rgba(0, 0, 0, 0.1)',
-                  color: "rgba(255, 255, 255, 0.5)",
-                  marginBottom: 1,
-                }}>
-                  ?
-                </Avatar>
-                <Typography variant="subtitle1" color='#fff'>
-                  Присоедениться как игрок
-                </Typography>
+        {Object.entries(room.players)
+          .filter(([slot]) => parseInt(slot) >= 0)
+          .map(([slot, player]) => player == null ? (
+            <Paper key={slot} onClick={()=>joinAsUser(parseInt(slot))}
+              elevation={3} sx={{ 
+              padding: 2,
+              minWidth: 150,
+              backgroundColor: theme.palette.background.default,
+              color: "#fff",
+              cursor: !currentPlayer ? "pointer" : "default"
+            }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', flexDirection:"column", alignItems: 'center' }}>
+                  <Avatar sx={{ 
+                    width: 40, 
+                    height: 40, 
+                    bgcolor: 'rgba(0, 0, 0, 0.1)',
+                    color: "rgba(255, 255, 255, 0.5)",
+                    marginBottom: 1,
+                  }}>
+                    ?
+                  </Avatar>
+                  <Typography variant="subtitle1" color='#fff'>
+                    {!currentPlayer ? "Занять слот" : "Ожидаем игрока"}
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
-          </Paper>
-        )}
-        {room?.players
-          .filter(player => player.room_stats.Role == "player")
-          .map((player, i) =>
-            <Paper key={player.id} elevation={3} sx={{ 
+            </Paper>
+          ) :
+            <Paper key={slot} elevation={3} sx={{ 
               padding: 2,
               minWidth: 150,
               backgroundColor: player.color,
@@ -89,7 +88,7 @@ export const Players: React.FC = () => {
                     ?
                   </Avatar>
                   <Typography variant="h6" color='#fff'>
-                    {player.username} {player.room_stats.QuestionPicker &&  <StarIcon fontSize="small" />}
+                    {player.username} {player.room_stats.QuestionPicker &&  <StarIcon sx={{marginBottom: '-3px'}} fontSize="small" />}
                   </Typography>
                 </Box>
               </Box>

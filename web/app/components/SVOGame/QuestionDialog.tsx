@@ -20,7 +20,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
 
     const [showAnswer, setShowAnswer] = useState(false);
 
-    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>room?.players.find(p=>p.id == user?.session_id), [room]);
+    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p=>p != null && p.id == user?.session_id), [room]);
     
     // Получение текста вопроса
     const getQuestionText = (question: Question) => {

@@ -36,7 +36,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     const [currentQuestion, setCurrentQuestion] = useState < CurrentQuestion | null > (null);
 
     const gameData = useMemo<GameData>(()=>rounds[currentRound], [rounds, currentRound]);
-    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>room?.players.find(p=>p.id == user?.session_id), [room]);
+    const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p => p != null && p.id == user?.session_id), [room]);
         
     const themes = useMemo(()=>gameData.Themes.map(theme => ({
       ...theme,
@@ -46,14 +46,14 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     })),[gameData])
 
     const availableQuestion = useCallback((question: Question)=>{
-      return !question.IsAnswered && (
+      return !question.IsAnswered && ( currentPlayer != null && (
                         currentPlayer?.room_stats.QuestionPicker
-                        || currentPlayer?.room_stats.Role == "host")
+                        || currentPlayer?.room_stats.Role == "host"))
     },[currentPlayer])
 
 
     const handleQuestionClick = (themeIndex: number, questionIndex: number) => {
-      var question = themes[themeIndex].Questions[questionIndex];
+      const question = themes[themeIndex].Questions[questionIndex];
       if(!question || !availableQuestion(question)) return;
       sendMessage("select_question", {themeIndex, questionIndex})
     };
@@ -70,27 +70,28 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     }, [themes]);
   
     // Временное решение, пока нет вебсокета
-    useEffect(()=>{
-      let timer = setInterval(()=>{
-        http.get("/rooms/get").then(r=>{
-          dispatch(setRoomData({ ...r.data}))
-        });
-      }, 5000);
+    // useEffect(()=>{
+    //   let timer = setInterval(()=>{
+    //     http.get("/rooms/get").then(r=>{
+    //       dispatch(setRoomData({ ...r.data}))
+    //     });
+    //   }, 5000);
       
-      return () => clearInterval(timer);
-    }, []);
+    //   return () => clearInterval(timer);
+    // }, []);
 
     useEffect(()=>{
       return subscribe("updated_room", (roomData) => {
-        dispatch(setRoomData({ ...roomData}))
+        console.log("test")
+        dispatch(setRoomData({ ...roomData }))
       })
     }, [])
 
     useEffect(()=>{
       return subscribe("select_question", (data) => {
         const { themeIndex, questionIndex } = data;
-        const question = themes[themeIndex].Questions[questionIndex];
-
+        var question = themes[themeIndex].Questions[questionIndex];
+        console.log("открываем вопрос...")
         if(!question || !availableQuestion(question)) return;
         
         question.IsAnswered = true;

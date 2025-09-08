@@ -18,8 +18,8 @@ type roomPlayerResponse struct {
 	RoomStats *entity.RoomStats `json:"room_stats"`
 }
 
-func RoomPlayerResponse(user *entity.User) roomPlayerResponse {
-	return roomPlayerResponse{
+func RoomPlayerResponse(user *entity.User) *roomPlayerResponse {
+	return &roomPlayerResponse{
 		ID:        user.SessionID,
 		Color:     user.Color,
 		RoomStats: user.RoomStats,
@@ -41,15 +41,15 @@ func UserIdentifyResponse(user *entity.User) userIdentifyResponse {
 }
 
 type roomDetailedResponse struct {
-	ID           string               `json:"id"`
-	Name         string               `json:"name"`
-	PackageID    string               `json:"package_id"`
-	PackageName  string               `json:"package_name"`
-	PlayersMax   int                  `json:"players_max"`
-	CurrentRound int                  `json:"current_round"`
-	IsStarted    bool                 `json:"is_started"`
-	IsPaused     bool                 `json:"is_paused"`
-	Players      []roomPlayerResponse `json:"players"`
+	ID           string                      `json:"id"`
+	Name         string                      `json:"name"`
+	PackageID    string                      `json:"package_id"`
+	PackageName  string                      `json:"package_name"`
+	PlayersMax   int                         `json:"players_max"`
+	CurrentRound int                         `json:"current_round"`
+	IsStarted    bool                        `json:"is_started"`
+	IsPaused     bool                        `json:"is_paused"`
+	Players      map[int]*roomPlayerResponse `json:"players"`
 }
 
 func RoomDetailedResponse(room *entity.Room) roomDetailedResponse {
@@ -63,9 +63,14 @@ func RoomDetailedResponse(room *entity.Room) roomDetailedResponse {
 		IsPaused:     room.IsPaused,
 		PlayersMax:   room.PlayersMax,
 	}
-	players := make([]roomPlayerResponse, 0)
-	for _, player := range room.Players {
-		players = append(players, RoomPlayerResponse(player))
+	players := make(map[int]*roomPlayerResponse, room.PlayersMax+1)
+	for i := -1; i < room.PlayersMax; i++ {
+		players[i] = nil
+	}
+	for slotId, player := range room.Players {
+		if player != nil {
+			players[slotId] = RoomPlayerResponse(player)
+		}
 	}
 	resp.Players = players
 	return resp

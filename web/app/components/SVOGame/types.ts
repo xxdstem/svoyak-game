@@ -68,7 +68,7 @@ export type RoomDetails = {
 	package_id:   string;           
 	package_name: string;      
 	players_max:  number;
-	players:     RoomPlayer[];
+	players:     Map<number, RoomPlayer>;
   is_started: boolean;
   is_paused: boolean;
 }

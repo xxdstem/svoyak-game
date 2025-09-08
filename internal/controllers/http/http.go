@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
+	"strconv"
 	"svoyak/internal/entity"
 	"svoyak/internal/entity/dto"
 	"svoyak/pkg/logger"
@@ -29,7 +29,7 @@ type RoomUseCase interface {
 	ListAvailableRooms() []*entity.Room
 	GetRoom(roomID string) (*entity.Room, error)
 	AbortRoom(room *entity.Room) error
-	SetPlayerRole(player *entity.User, role string) error
+	JoinAsPlayer(user *entity.User, slotId int) error
 }
 
 type GameUseCase interface {
@@ -59,8 +59,8 @@ func (h *handler) Register(router *mux.Router) {
 	router.HandleFunc("/game/create", h.CreateGame).Methods("POST")
 	router.HandleFunc("/game/gamedata", h.GameData)
 	router.HandleFunc("/game/abort", h.AbortGame)
+	router.HandleFunc("/game/join", h.JoinAsPlayer).Methods("PATCH")
 	router.HandleFunc("/room/start", h.StartGame).Methods("PATCH")
-	router.HandleFunc("/room/set_role", h.RoomSetRole).Methods("PATCH")
 }
 
 func (h *handler) GetIdentify(w http.ResponseWriter, r *http.Request) {
@@ -146,9 +146,8 @@ func (h *handler) GameData(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
+	// This is join as MEMBER (can be a viewer too)
 	user := h.uuc.GetUser(r)
-	user.Mutex.Lock()
-	defer user.Mutex.Unlock()
 	if user == nil {
 		http.Error(w, "Non authorized", http.StatusUnauthorized)
 		return
@@ -157,6 +156,8 @@ func (h *handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Room already taken", http.StatusBadRequest)
 		return
 	}
+	user.Mutex.Lock()
+	defer user.Mutex.Unlock()
 	id := r.FormValue("room_id")
 	password := r.FormValue("password")
 	room, err := h.ruc.GetRoom(id)
@@ -175,8 +176,6 @@ func (h *handler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	user := h.uuc.GetUser(r)
-	user.Mutex.Lock()
-	defer user.Mutex.Unlock()
 	if user == nil {
 		http.Error(w, "Non authorized", http.StatusUnauthorized)
 		return
@@ -185,6 +184,8 @@ func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Room already taken", http.StatusBadRequest)
 		return
 	}
+	user.Mutex.Lock()
+	defer user.Mutex.Unlock()
 	if err := r.ParseMultipartForm(1000 << 20); err != nil {
 		http.Error(w, "Failed to parse form", http.StatusBadRequest)
 		return
@@ -215,10 +216,14 @@ func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func (h *handler) RoomSetRole(w http.ResponseWriter, r *http.Request) {
+func (h *handler) JoinAsPlayer(w http.ResponseWriter, r *http.Request) {
 	user := h.uuc.GetUser(r)
-	role := strings.ToLower(r.FormValue("role"))
-	err := h.ruc.SetPlayerRole(user, role)
+	if user == nil {
+		http.Error(w, "Non authorized", http.StatusUnauthorized)
+		return
+	}
+	slotId, _ := strconv.Atoi(r.FormValue("slotId"))
+	err := h.ruc.JoinAsPlayer(user, slotId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

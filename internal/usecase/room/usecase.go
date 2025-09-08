@@ -96,17 +96,25 @@ func (uc *uc) LeaveRoom(user *entity.User) error {
 	}
 
 	room := user.Room
-	delete(room.Players, user.SessionID)
+	for s, p := range room.Players {
+		if p != nil && p.SessionID == user.SessionID {
+			delete(room.Players, s)
+		}
+	}
+	delete(room.Members, user.SessionID)
 	user.Room = nil
 	user.RoomStats = nil
+
+	if len(room.Players) == 0 {
+		log.Info("Aborting room!")
+		uc.AbortRoom(room)
+		return nil
+	}
+
 	room.Broadcast(websocket.Message{
 		Type:    "updated_room",
 		Payload: dto.RoomDetailedResponse(room),
 	})
-	if len(room.Players) == 0 {
-		log.Info("Aborting room!")
-		uc.AbortRoom(room)
-	}
 	return nil
 }
 func (uc *uc) ListAvailableRooms() []*entity.Room {
@@ -135,29 +143,27 @@ func (uc *uc) AbortRoom(room *entity.Room) error {
 	return nil
 }
 
-func (uc *uc) SetPlayerRole(player *entity.User, role string) error {
-	if !isValidRole(role) {
-		return errors.New("bad request")
+func (uc *uc) JoinAsPlayer(user *entity.User, slotId int) error {
+	room := user.Room
+	if room == nil {
+		return errors.New("there's no room")
 	}
-	if role == role_host {
-		for _, p := range player.Room.Players {
-			if p.RoomStats.Role == role_host {
-				return errors.New("host role is not available")
-			}
-		}
+	if room.PlayersMax == len(room.Players) {
+		return errors.New("room is full")
 	}
-	player.RoomStats.Role = role
-	player.Room.Broadcast(websocket.Message{
+	if room.Players[slotId] != nil {
+		return errors.New("slot is busy")
+	}
+	room.Players[slotId] = user
+	role := role_player
+	if slotId == -1 {
+		role = role_host
+	}
+	user.RoomStats = &entity.RoomStats{Role: role}
+	user.Room = room
+	room.Broadcast(websocket.Message{
 		Type:    "updated_room",
-		Payload: dto.RoomDetailedResponse(player.Room),
+		Payload: dto.RoomDetailedResponse(room),
 	})
 	return nil
-}
-
-func isValidRole(role string) bool {
-	switch role {
-	case role_host, role_player, role_viewer:
-		return true
-	}
-	return false
 }

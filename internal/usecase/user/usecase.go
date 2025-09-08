@@ -6,10 +6,8 @@ import (
 	"errors"
 	"net/http"
 	"svoyak/internal/entity"
-	"svoyak/internal/entity/dto"
 	"svoyak/internal/utils"
 	"svoyak/pkg/logger"
-	"svoyak/pkg/websocket"
 	"sync"
 
 	"github.com/google/uuid"
@@ -25,6 +23,7 @@ type Store interface {
 }
 
 type RoomUseCase interface {
+	LeaveRoom(user *entity.User) error
 	GetRoom(roomID string) (*entity.Room, error)
 }
 
@@ -52,16 +51,8 @@ func (uc *uc) JoinRoom(user *entity.User, roomID string) error {
 	if err != nil {
 		return err
 	}
-	if room.PlayersMax == len(room.Players) {
-		return errors.New("room is full")
-	}
-	room.Players[user.SessionID] = user
-	user.RoomStats = &entity.RoomStats{}
+	room.Members[user.SessionID] = user
 	user.Room = room
-	room.Broadcast(websocket.Message{
-		Type:    "updated_room",
-		Payload: dto.RoomDetailedResponse(room),
-	})
 	return nil
 }
 
@@ -79,10 +70,11 @@ func (uc *uc) NewUser(sessionID string, name string) (*entity.User, error) {
 
 func (uc *uc) Logout(r *http.Request) error {
 	sessionID := r.Context().Value("sessionID").(string)
-	_, ok := uc.store.Get(sessionID)
+	user, ok := uc.store.Get(sessionID)
 	if !ok {
 		return nil
 	}
+	uc.ruc.LeaveRoom(user)
 	uc.store.Del(sessionID)
 	return nil
 }
