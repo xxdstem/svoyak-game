@@ -19,15 +19,16 @@ type WebSocketServer struct {
 }
 
 type Client struct {
-	ID        string
-	SessionID string
-	Conn      *websocket.Conn
-	Send      chan Message
+	ID           string
+	SessionID    string
+	Conn         *websocket.Conn
+	Send         chan Message
+	onDisconnect func()
 }
 
 type Message struct {
-	Type    string      `json:"type"`
-	Payload interface{} `json:"payload"`
+	Type    string `json:"type"`
+	Payload any    `json:"payload"`
 }
 
 type MessageHandler func(client *Client, message Message)
@@ -47,7 +48,7 @@ func NewWebSocketServer() *WebSocketServer {
 	}
 }
 
-func (s *WebSocketServer) HandleWebSocket(w http.ResponseWriter, r *http.Request, SessionID string) *Client {
+func (s *WebSocketServer) HandleWebSocket(w http.ResponseWriter, r *http.Request, SessionID string, onDisconnect func()) *Client {
 	conn, err := s.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("WebSocket upgrade error: %v", err)
@@ -55,10 +56,11 @@ func (s *WebSocketServer) HandleWebSocket(w http.ResponseWriter, r *http.Request
 	}
 
 	client := &Client{
-		ID:        generateClientID(),
-		SessionID: SessionID,
-		Conn:      conn,
-		Send:      make(chan Message, 256),
+		ID:           generateClientID(),
+		SessionID:    SessionID,
+		Conn:         conn,
+		Send:         make(chan Message, 256),
+		onDisconnect: onDisconnect,
 	}
 
 	s.register <- client
@@ -83,6 +85,7 @@ func (s *WebSocketServer) Run() {
 		case client := <-s.unregister:
 			s.clientsMu.Lock()
 			if _, ok := s.clients[client.ID]; ok {
+				client.onDisconnect()
 				delete(s.clients, client.ID)
 				close(client.Send)
 			}

@@ -17,17 +17,21 @@ type GameUseCase interface {
 	SelectQustion(room *entity.Room, themeIdx int, questionIdx int)
 }
 
+type RoomUseCase interface {
+	LeaveRoom(user *entity.User) error
+}
 type WSHandler struct {
 	server *websocket.WebSocketServer
 	store  Store
 	guc    GameUseCase
+	ruc    RoomUseCase
 }
 
 var log *logger.Logger
 
-func NewWSHandler(log *logger.Logger, server *websocket.WebSocketServer, store Store, guc GameUseCase) *WSHandler {
-	log = log
-	return &WSHandler{server, store, guc}
+func NewWSHandler(l *logger.Logger, server *websocket.WebSocketServer, store Store, guc GameUseCase, ruc RoomUseCase) *WSHandler {
+	log = l
+	return &WSHandler{server, store, guc, ruc}
 }
 
 func (h *WSHandler) Register() {
@@ -41,7 +45,9 @@ func (h *WSHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cannot find user", http.StatusUnauthorized)
 		return
 	}
-	ws := h.server.HandleWebSocket(w, r, user.SessionID)
+	ws := h.server.HandleWebSocket(w, r, user.SessionID, func() {
+		h.ruc.LeaveRoom(user)
+	})
 	user.Ws = ws
 }
 
@@ -54,7 +60,7 @@ func (h *WSHandler) SelectQustion(client *websocket.Client, message websocket.Me
 	user.Room.Broadcast(message)
 	// TODO:
 	// Сделать это не через жопу?
-	payload, ok := message.Payload.(map[string]interface{})
+	payload, ok := message.Payload.(map[string]any)
 	if !ok {
 		log.Error("cannot convert to int")
 		return
