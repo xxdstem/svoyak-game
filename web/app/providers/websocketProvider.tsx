@@ -13,6 +13,7 @@ const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       webSocketService.connect(userToken);
 
       return () => {
+        webSocketService.disconnect()
       };
     } else {
       webSocketService.disconnect()

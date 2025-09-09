@@ -83,6 +83,7 @@ class WebSocketService {
 
   disconnect() {
     if (this.socket) {
+      this.socket.onclose = null;
       this.socket.close();
       this.socket = null;
     }
