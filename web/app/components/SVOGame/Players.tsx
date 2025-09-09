@@ -19,14 +19,15 @@ export const Players: React.FC = () => {
     
 
     const joinAsUser = async (slotId: number) => {
-        var f = new FormData();
-        f.append("slotId", String(slotId))
-        try{
-          var r = await http.patch("/game/join", f);
-          dispatch(setRoomData(r.data))
-        } catch(e) {
-          console.error(e)
-        }
+      if(currentPlayer) return;
+      var f = new FormData();
+      f.append("slotId", String(slotId))
+      try{
+        var r = await http.patch("/game/join", f);
+        dispatch(setRoomData(r.data))
+      } catch(e) {
+        console.error(e)
+      }
     }
     
     return <Box sx={{ 

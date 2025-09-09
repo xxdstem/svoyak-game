@@ -50,7 +50,7 @@ func New(l *logger.Logger, store Store, gameUsecase GameUseCase, fs FileService)
 	return &uc{store: store, rooms: make(map[string]*entity.Room), gameUsecase: gameUsecase, fs: fs}
 }
 
-func (uc *uc) CreateGame(user *entity.User, req *dto.CreateGameRequest) (*entity.Room, error) {
+func (uc *uc) CreateGame(req *dto.CreateGameRequest) (*entity.Room, error) {
 	pkg, err := uc.saveAndProcessPackage(req.File)
 	if err != nil {
 		return nil, fmt.Errorf("failed to process package: %w", err)
@@ -153,6 +153,13 @@ func (uc *uc) JoinAsPlayer(user *entity.User, slotId int) error {
 	}
 	if room.Players[slotId] != nil {
 		return errors.New("slot is busy")
+	}
+
+	// Возможно потом сделать возможность менять слот
+	for _, p := range room.Players {
+		if p.SessionID == user.SessionID {
+			return errors.New("you cannot change slot")
+		}
 	}
 	room.Players[slotId] = user
 	role := role_player

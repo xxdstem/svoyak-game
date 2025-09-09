@@ -24,7 +24,7 @@ type UserUseCase interface {
 }
 
 type RoomUseCase interface {
-	CreateGame(user *entity.User, req *dto.CreateGameRequest) (*entity.Room, error)
+	CreateGame(req *dto.CreateGameRequest) (*entity.Room, error)
 	LeaveRoom(user *entity.User) error
 	ListAvailableRooms() []*entity.Room
 	GetRoom(roomID string) (*entity.Room, error)
@@ -203,7 +203,7 @@ func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 		File:     file,
 	}
 
-	room, err := h.ruc.CreateGame(user, req)
+	room, err := h.ruc.CreateGame(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
