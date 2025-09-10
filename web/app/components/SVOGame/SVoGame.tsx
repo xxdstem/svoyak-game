@@ -213,7 +213,6 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
       {currentQuestion && (
         <Dialog 
           open={!!currentQuestion} 
-          onClose={handleCloseQuestion}
           maxWidth="md"
           fullWidth
           slotProps={{
@@ -225,7 +224,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
             }
           }}
         >
-          <QuestionDialog themes={themes}  currentQuestion={currentQuestion} />
+          <QuestionDialog themes={themes} handleCloseQuestion={handleCloseQuestion} currentQuestion={currentQuestion} />
         </Dialog>
       )}
       
