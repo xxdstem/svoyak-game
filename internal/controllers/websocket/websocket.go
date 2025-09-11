@@ -19,6 +19,7 @@ type GameUseCase interface {
 
 type RoomUseCase interface {
 	LeaveRoom(user *entity.User) error
+	SetWsState(user *entity.User, state bool)
 }
 type WSHandler struct {
 	server *websocket.WebSocketServer
@@ -45,8 +46,10 @@ func (h *WSHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cannot find user", http.StatusUnauthorized)
 		return
 	}
+	h.ruc.SetWsState(user, true)
 	ws := h.server.HandleWebSocket(w, r, user.SessionID, func() {
-		h.ruc.LeaveRoom(user)
+		h.ruc.SetWsState(user, false)
+		//h.ruc.LeaveRoom(user)
 	})
 	user.Ws = ws
 }
@@ -62,7 +65,7 @@ func (h *WSHandler) SelectQustion(client *websocket.Client, message websocket.Me
 	// Сделать это не через жопу?
 	payload, ok := message.Payload.(map[string]any)
 	if !ok {
-		log.Error("cannot convert to int")
+		log.Error("cannot convert")
 		return
 	}
 	h.guc.SelectQustion(user.Room, int(payload["themeIndex"].(float64)), int(payload["questionIndex"].(float64)))

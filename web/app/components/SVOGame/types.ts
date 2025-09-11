@@ -51,8 +51,9 @@ export type Package = {
 
 export type RoomStats = {
   Role: 'player' | 'host' | '';
-  QuestionPicker: boolean;
   Points: number;
+  QuestionPicker: boolean;
+  WsConnected: boolean;
 }
 
 export type RoomPlayer = {

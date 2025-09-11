@@ -73,6 +73,8 @@ export const Players: React.FC = () => {
             <Paper key={slot} elevation={1} sx={{ 
               padding: 2,
               minWidth: 150,
+              border: !player.room_stats.WsConnected ? "2px solid red" : "",
+              opacity: !player.room_stats.WsConnected ? 0.5 : 1,
               backgroundColor: player.color,
               color: "#fff",
             }}>

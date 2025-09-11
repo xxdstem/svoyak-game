@@ -17,5 +17,9 @@ export const useWebSocketMessages = () => {
     webSocketService.send({ type, payload });
   }, [webSocketService]);
 
-  return { subscribe, sendMessage };
+  const getState = useCallback(()=>{
+    return webSocketService.getStatus();
+  }, [webSocketService]);
+  
+  return { subscribe, sendMessage, getState };
 };

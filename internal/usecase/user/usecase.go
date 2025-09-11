@@ -57,10 +57,14 @@ func (uc *uc) JoinRoom(user *entity.User, roomID string) error {
 }
 
 func (uc *uc) NewUser(sessionID string, name string) (*entity.User, error) {
-	if uc.store.FindByName(name) != nil {
+	user := uc.store.FindByName(name)
+	if user != nil {
+		if user.RoomStats != nil && !user.RoomStats.WsConnected {
+			return user, nil
+		}
 		return nil, errors.New("this name is already taken")
 	}
-	user := &entity.User{SessionID: sessionID, UserName: name, Mutex: sync.RWMutex{}}
+	user = &entity.User{SessionID: sessionID, UserName: name, Mutex: sync.RWMutex{}}
 	md5 := md5.Sum([]byte(uuid.New().String()))
 	user.Token = hex.EncodeToString(md5[:])
 	user.Color = utils.RandomHexColor()

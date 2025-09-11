@@ -3,23 +3,25 @@ import { Box, AppBar, Toolbar, styled, Stack, IconButton, Badge, Button, Typogra
 
 import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router';
-import MenuIcon from '@mui/icons-material/Menu';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import Logo from "../../../assets/logo.svg"
 import { $currentUser, clearUser } from '~/store/user';
 import { useDispatch, useSelector } from 'react-redux';
-import type { User } from '~/types';
 import http from '~/utils/axios';
 
 const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  
+  const currentUser = useSelector($currentUser);
+
+
   const logout = ()=>{
     http.post("/logout")
     dispatch(clearUser());
     navigate("/login")
   }
-  const currentUser = useSelector($currentUser);
+
   const AppBarStyled = styled(AppBar)(({ theme }) => ({
     boxShadow: 'none',
     backgroundColor: theme.palette.mode === 'light' ? theme.palette.primary.main : theme.palette.background.paper,
@@ -29,6 +31,7 @@ const Header = () => {
       minHeight: '70px',
     },
   }));
+
   const ToolbarStyled = styled(Toolbar)(({ theme }) => ({
     width: '100%',
     color: theme.palette.text.secondary,
