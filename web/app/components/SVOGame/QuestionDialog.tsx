@@ -6,6 +6,7 @@ import MusicIcon from "./MusicIcon";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { $currentUser } from "~/store/user";
 import { AnimatedBox } from "./AnimatedBox";
+import { useSyncedTimer } from "./SyncedTimer";
 
 type Props = {
     themes: Theme[];
@@ -17,13 +18,21 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     const { themes, currentQuestion, handleCloseQuestion  } = props;
     const default_delay = 2;
     const question_duration = 5;
+    const player_answer_duration = 10;
     
     const room = useSelector($room);
     const user = useSelector($currentUser);
     const theme = useTheme();
     const [delaying, setDelaying] = useState(true);
     const [showAnswer, setShowAnswer] = useState(false);
+    const [triedAnswer, setTriedAnswer] = useState(false);
 
+    const asnwerTimer = useSyncedTimer(()=>{
+        setShowAnswer(true);
+        setTimeout(()=>{
+            handleCloseQuestion()
+        }, default_delay * 1000);
+    }, question_duration * 1000)
     const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p=>p != null && p.id == user?.session_id), [room]);
     
     // Получение текста вопроса
@@ -47,7 +56,12 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     };
 
     const answer = ()=>{
-
+        if(triedAnswer) return;
+        setTriedAnswer(true);
+        asnwerTimer.pause();
+        setTimeout(()=>{
+            asnwerTimer.resume();
+        }, player_answer_duration * 1000);
     }
 
     // Получение медиа (изображения/аудио) вопроса
@@ -70,12 +84,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
 
     useEffect(()=>{
         if(!delaying){
-            setTimeout(()=>{
-                setShowAnswer(true);
-                setTimeout(()=>{
-                    handleCloseQuestion()
-                }, default_delay * 1000);
-            }, question_duration * 1000)
+            asnwerTimer.start();
         }
     }, [delaying])
 
@@ -95,11 +104,12 @@ export const QuestionDialog: React.FC<Props> = (props) => {
             {gameTheme.Name} за {question.Price}
         </DialogTitle>
         <DialogContent sx={{pt: '16px !important'}}>
-            <AnimatedBox duration={question_duration} delay={default_delay} show={!delaying}>
+            <AnimatedBox duration={question_duration} show={!delaying} isPaused={asnwerTimer.isPaused}>
                 <Box sx={{ display: 'flex', alignItems:"center",
+                    aspectRatio: "3/2", maxHeight: '90%', p:2,
                     flexDirection:"column", justifyContent: 'center'}}>
                     {(questionText || !media) && (
-                        <Typography variant="h4" mb={1} align="center" gutterBottom>
+                        <Typography variant="h2" mb={'1'} align="center" gutterBottom>
                             {questionText}
                         </Typography>
                     )}
@@ -108,7 +118,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
                             <img
                             src={`http://localhost:8080/files/${room.package_id}/Images/${encodeURIComponent(encodeURIComponent(media.Content))}`}
                             alt="Question media" 
-                            style={{ maxWidth: '90%', maxHeight: '70vh' }} 
+                            style={{ minWidth: '50%', maxWidth: '90%', maxHeight: '70vh' }} 
                             />
                         )}
                             
@@ -126,7 +136,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
             </AnimatedBox>
         </DialogContent>
         <DialogActions sx={{ 
-            minHeight: 74,
+            minHeight: 76,
             justifyContent: 'space-between', 
             padding: 2,
             backgroundColor: theme.palette.background.default,
@@ -143,7 +153,8 @@ export const QuestionDialog: React.FC<Props> = (props) => {
                 Показать ответ
                 </Button> : !delaying && <Button
                 fullWidth
-                onClick={answer} 
+                onClick={answer}
+                disabled={triedAnswer}
                 color="success" 
                 variant="contained"
                 >ОТВЕТИТЬ

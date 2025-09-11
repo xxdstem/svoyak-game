@@ -50,7 +50,7 @@ export type Package = {
 };
 
 export type RoomStats = {
-  Role: string;
+  Role: 'player' | 'host' | '';
   QuestionPicker: boolean;
   Points: number;
 }

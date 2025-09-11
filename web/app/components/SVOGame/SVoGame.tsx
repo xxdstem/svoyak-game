@@ -82,7 +82,6 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     // }, []);
 
     useEffect(()=>{
-       console.log("подписька")
       return subscribe("updated_room", (roomData) => {
         dispatch(setRoomData(roomData))
       })

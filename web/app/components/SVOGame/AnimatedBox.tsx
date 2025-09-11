@@ -1,17 +1,19 @@
 import React from "react";
 import { Box } from '@mui/material';
 import { keyframes } from '@mui/system';
-
 type Props = {
   duration: number;
   show: boolean;
+  isPaused: boolean;
   children: React.ReactNode
 }
 export const AnimatedBox: React.FC<Props> = ({ 
   duration,
   show,
-  children 
+  isPaused,
+  children
 }) => {
+
   const shrinkHorizontal = keyframes`
     from { 
       left: 0;
@@ -51,7 +53,8 @@ export const AnimatedBox: React.FC<Props> = ({
           right: 0,
           height: '4px',
           backgroundColor: '#fff',
-          animation: `${shrinkHorizontal} ${duration}s linear forwards`
+          animation: `${shrinkHorizontal} ${duration}s linear forwards`,
+          animationPlayState: isPaused ? "paused" : "running"
         }}
       />
       
@@ -63,7 +66,8 @@ export const AnimatedBox: React.FC<Props> = ({
           bottom: 0,
           width: '4px',
           backgroundColor: '#fff',
-          animation: `${shrinkVertical} ${duration}s linear forwards`
+          animation: `${shrinkVertical} ${duration}s linear forwards`,
+          animationPlayState: isPaused ? "paused" : "running"
         }}
       />
       
@@ -75,7 +79,8 @@ export const AnimatedBox: React.FC<Props> = ({
           right: 0,
           height: '4px',
           backgroundColor: '#fff',
-          animation: `${shrinkHorizontal} ${duration}s linear forwards`
+          animation: `${shrinkHorizontal} ${duration}s linear forwards`,
+          animationPlayState: isPaused ? "paused" : "running"
         }}
       />
       
@@ -87,7 +92,8 @@ export const AnimatedBox: React.FC<Props> = ({
           bottom: 0,
           width: '4px',
           backgroundColor: '#fff',
-          animation: `${shrinkVertical} ${duration}s linear forwards`
+          animation: `${shrinkVertical} ${duration}s linear forwards`,
+          animationPlayState: isPaused ? "paused" : "running"
         }}
       />
       
