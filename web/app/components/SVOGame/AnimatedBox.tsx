@@ -4,13 +4,11 @@ import { keyframes } from '@mui/system';
 
 type Props = {
   duration: number;
-  delay: number;
   show: boolean;
   children: React.ReactNode
 }
 export const AnimatedBox: React.FC<Props> = ({ 
-  duration, 
-  delay,
+  duration,
   show,
   children 
 }) => {
@@ -36,11 +34,12 @@ export const AnimatedBox: React.FC<Props> = ({
     }
   `;
 
+  if(!show) return children;
+
   return (
     <Box
       sx={{
         position: 'relative',
-        backgroundColor: 'grey.800',
         overflow: 'hidden',
       }}
     >
@@ -51,9 +50,8 @@ export const AnimatedBox: React.FC<Props> = ({
           left: 0,
           right: 0,
           height: '4px',
-          backgroundColor: show ? '#fff' : 'transparent',
-          animation: `${shrinkHorizontal} ${duration}s ease-in-out forwards`,
-          animationDelay: `${delay}s`
+          backgroundColor: '#fff',
+          animation: `${shrinkHorizontal} ${duration}s linear forwards`
         }}
       />
       
@@ -64,9 +62,8 @@ export const AnimatedBox: React.FC<Props> = ({
           right: 0,
           bottom: 0,
           width: '4px',
-          backgroundColor:  show ? '#fff' : 'transparent',
-          animation: `${shrinkVertical} ${duration}s ease-in-out forwards`,
-          animationDelay: `${delay}s`
+          backgroundColor: '#fff',
+          animation: `${shrinkVertical} ${duration}s linear forwards`
         }}
       />
       
@@ -77,9 +74,8 @@ export const AnimatedBox: React.FC<Props> = ({
           left: 0,
           right: 0,
           height: '4px',
-          backgroundColor:  show ? '#fff' : 'transparent',
-          animation: `${shrinkHorizontal} ${duration}s ease-in-out forwards`,
-          animationDelay: `${delay}s`
+          backgroundColor: '#fff',
+          animation: `${shrinkHorizontal} ${duration}s linear forwards`
         }}
       />
       
@@ -90,13 +86,12 @@ export const AnimatedBox: React.FC<Props> = ({
           left: 0,
           bottom: 0,
           width: '4px',
-          backgroundColor: show ? '#fff' : 'transparent',
-          animation: `${shrinkVertical} ${duration}s ease-in-out forwards`,
-          animationDelay: `${delay}s`
+          backgroundColor: '#fff',
+          animation: `${shrinkVertical} ${duration}s linear forwards`
         }}
       />
       
-      <Box sx={{ p: 2 }}>
+      <Box>
         {children}
       </Box>
     </Box>
