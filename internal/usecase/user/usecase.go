@@ -6,9 +6,12 @@ import (
 	"errors"
 	"net/http"
 	"svoyak/internal/entity"
+	"svoyak/internal/entity/dto"
 	"svoyak/internal/utils"
 	"svoyak/pkg/logger"
+	"svoyak/pkg/websocket"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -46,6 +49,24 @@ func (uc *uc) GetUser(r *http.Request) *entity.User {
 	return user
 }
 
+func (uc *uc) SetWsState(user *entity.User, state *websocket.Client) {
+	room := user.Room
+	if user.Ws != state {
+		user.Ws = state
+		if user.RoomStats == nil {
+			return
+		}
+		go func() {
+			time.Sleep(1 * time.Second)
+			room.Broadcast(websocket.Message{
+				Type:    "updated_room",
+				Payload: dto.RoomDetailedResponse(room),
+			})
+		}()
+
+	}
+}
+
 func (uc *uc) JoinRoom(user *entity.User, roomID string) error {
 	room, err := uc.ruc.GetRoom(roomID)
 	if err != nil {
@@ -59,7 +80,7 @@ func (uc *uc) JoinRoom(user *entity.User, roomID string) error {
 func (uc *uc) NewUser(sessionID string, name string) (*entity.User, error) {
 	user := uc.store.FindByName(name)
 	if user != nil {
-		if user.RoomStats != nil && !user.RoomStats.WsConnected {
+		if user.RoomStats != nil && user.Ws == nil {
 			return user, nil
 		}
 		return nil, errors.New("this name is already taken")

@@ -32,7 +32,7 @@ func Run(log *logger.Logger) {
 	gameUseCase := game.New(log, store)
 	roomUseCase := room.New(log, store, gameUseCase, fileservice.New())
 	userUseCase := user.New(log, store, roomUseCase)
-	wsHandler := wsController.NewWSHandler(log, wsServer, store, gameUseCase, roomUseCase)
+	wsHandler := wsController.NewWSHandler(log, wsServer, store, gameUseCase, roomUseCase, userUseCase)
 	wsHandler.Register()
 	r := mux.NewRouter()
 	apiRouter := api.New(log, userUseCase, roomUseCase, gameUseCase)

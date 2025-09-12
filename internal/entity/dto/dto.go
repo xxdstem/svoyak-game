@@ -12,18 +12,20 @@ type userIdentifyResponse struct {
 	UserName  string `json:"username"`
 }
 type roomPlayerResponse struct {
-	ID        string            `json:"id"`
-	UserName  string            `json:"username"`
-	Color     string            `json:"color"`
-	RoomStats *entity.RoomStats `json:"room_stats"`
+	ID          string            `json:"id"`
+	UserName    string            `json:"username"`
+	Color       string            `json:"color"`
+	WsConnected bool              `json:"ws_connected"`
+	RoomStats   *entity.RoomStats `json:"room_stats"`
 }
 
 func RoomPlayerResponse(user *entity.User) *roomPlayerResponse {
 	return &roomPlayerResponse{
-		ID:        user.SessionID,
-		Color:     user.Color,
-		RoomStats: user.RoomStats,
-		UserName:  user.UserName,
+		ID:          user.SessionID,
+		Color:       user.Color,
+		RoomStats:   user.RoomStats,
+		UserName:    user.UserName,
+		WsConnected: user.Ws != nil,
 	}
 }
 

@@ -20,5 +20,4 @@ type RoomStats struct {
 	Role           string
 	QuestionPicker bool
 	Points         int
-	WsConnected    bool
 }

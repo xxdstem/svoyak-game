@@ -80,7 +80,6 @@ func (s *WebSocketServer) Run() {
 			s.clientsMu.Lock()
 			s.clients[client.ID] = client
 			s.clientsMu.Unlock()
-			log.Printf("Client connected: %s (User: %s)", client.ID, client.SessionID)
 
 		case client := <-s.unregister:
 			s.clientsMu.Lock()
@@ -90,7 +89,6 @@ func (s *WebSocketServer) Run() {
 				close(client.Send)
 			}
 			s.clientsMu.Unlock()
-			log.Printf("Client disconnected: %s", client.ID)
 
 		case message := <-s.broadcast:
 			s.broadcastMessage(message)

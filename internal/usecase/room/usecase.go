@@ -90,20 +90,6 @@ func (uc *uc) GetRoom(roomID string) (*entity.Room, error) {
 	return room, nil
 }
 
-func (uc *uc) SetWsState(user *entity.User, state bool) {
-	room := user.Room
-	if user.RoomStats == nil {
-		return
-	}
-	if user.RoomStats.WsConnected != state {
-		user.RoomStats.WsConnected = state
-		room.Broadcast(websocket.Message{
-			Type:    "updated_room",
-			Payload: dto.RoomDetailedResponse(room),
-		})
-	}
-}
-
 func (uc *uc) LeaveRoom(user *entity.User) error {
 	if user.Room == nil {
 		return errors.New("user not in room")

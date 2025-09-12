@@ -53,13 +53,13 @@ export type RoomStats = {
   Role: 'player' | 'host' | '';
   Points: number;
   QuestionPicker: boolean;
-  WsConnected: boolean;
 }
 
 export type RoomPlayer = {
   id: string;
   username: string;
   color: string;
+  ws_connected: boolean;
   room_stats: RoomStats;
 }
 

@@ -5,7 +5,6 @@ import { type RootState } from '~/types';
 import { webSocketService } from '../services/websocket';
 
 const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const dispatch = useDispatch();
   const userToken = useSelector((state: RootState) => state.user?.token);
   
   useEffect(() => {
@@ -18,7 +17,7 @@ const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     } else {
       webSocketService.disconnect()
     }
-  }, [userToken, dispatch]);
+  }, [userToken]);
 
   return <>{children}</>;
 };

@@ -19,20 +19,24 @@ type GameUseCase interface {
 
 type RoomUseCase interface {
 	LeaveRoom(user *entity.User) error
-	SetWsState(user *entity.User, state bool)
+}
+
+type UserUseCase interface {
+	SetWsState(user *entity.User, state *websocket.Client)
 }
 type WSHandler struct {
 	server *websocket.WebSocketServer
 	store  Store
 	guc    GameUseCase
 	ruc    RoomUseCase
+	uuc    UserUseCase
 }
 
 var log *logger.Logger
 
-func NewWSHandler(l *logger.Logger, server *websocket.WebSocketServer, store Store, guc GameUseCase, ruc RoomUseCase) *WSHandler {
+func NewWSHandler(l *logger.Logger, server *websocket.WebSocketServer, store Store, guc GameUseCase, ruc RoomUseCase, uuc UserUseCase) *WSHandler {
 	log = l
-	return &WSHandler{server, store, guc, ruc}
+	return &WSHandler{server, store, guc, ruc, uuc}
 }
 
 func (h *WSHandler) Register() {
@@ -46,12 +50,11 @@ func (h *WSHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cannot find user", http.StatusUnauthorized)
 		return
 	}
-	h.ruc.SetWsState(user, true)
 	ws := h.server.HandleWebSocket(w, r, user.SessionID, func() {
-		h.ruc.SetWsState(user, false)
+		h.uuc.SetWsState(user, nil)
 		//h.ruc.LeaveRoom(user)
 	})
-	user.Ws = ws
+	h.uuc.SetWsState(user, ws)
 }
 
 func (h *WSHandler) SelectQustion(client *websocket.Client, message websocket.Message) {
