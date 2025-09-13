@@ -51,10 +51,16 @@ func (uc *uc) GetUser(r *http.Request) *entity.User {
 
 func (uc *uc) SetWsState(user *entity.User, state *websocket.Client) {
 	room := user.Room
+	if room == nil {
+		return
+	}
 	if user.Ws != state {
 		user.Ws = state
 		if user.RoomStats == nil {
 			return
+		}
+		if !room.IsStarted {
+			uc.ruc.LeaveRoom(user)
 		}
 		go func() {
 			time.Sleep(1 * time.Second)
