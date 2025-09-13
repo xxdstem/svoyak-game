@@ -56,7 +56,6 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     };
 
     const answer = ()=>{
-        handleCloseQuestion();
         if(triedAnswer) return;
         setTriedAnswer(true);
         asnwerTimer.pause();
