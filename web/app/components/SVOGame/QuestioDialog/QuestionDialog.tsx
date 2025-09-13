@@ -113,7 +113,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     
     return (<>
         <DialogTitle mb={1} sx={{backgroundColor: theme.palette.background.paper}}>
-            <Typography variant="h2" align="center" gutterBottom>
+            <Typography variant="h2" align="center">
                 {gameTheme.Name} за {question.Price}
             </Typography>
         </DialogTitle>

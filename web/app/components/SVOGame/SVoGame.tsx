@@ -113,25 +113,21 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
         Раунд {currentRound + 1}: {gameData?.Name}
       </Typography>
       <Box
-      sx={{ display: 'flex', flexDirection: 'column', gap: 2, height:"100%", overflow:"auto" }}>
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%', overflow: 'auto' }}
+      >
         {themes.map((gameTheme, themeIndex) => (
-          <Box 
-            key={themeIndex}
-            sx={{ 
-              display: 'flex', 
-              flexDirection: 'row', 
-              gap: 1,
-            }}
-          >
-            {/* Карточка с названием темы */}
-            <Card sx={{ 
+          <Box key={themeIndex} sx={{ display: 'grid', gridTemplateColumns: '1fr 5fr', alignItems: 'stretch', gap: 2, width: '100%' }}>
+            <Card sx={{
               backgroundColor: theme.palette.primary.light,
               color: theme.palette.text.primary,
-              width: 200, // Фиксированная ширина для темы
-              minHeight: 50, // Такая же высота, как у вопросов
+              minWidth: '200px',
+              width: '100%',
+              minHeight: '60px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              height: '100%',
+              wordBreak: 'break-word',
             }}>
               <CardContent>
                 <Typography variant="h6" align="center" mt={1}>
@@ -139,27 +135,25 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
                 </Typography>
               </CardContent>
             </Card>
-            
-            {/* Вопросы в строку */}
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, width: '100%', height: '100%' }}>
               {gameTheme.Questions
                 .sort((a, b) => a.Price - b.Price)
                 .map((question, questionIndex) => (
-                  <Card 
+                  <Card
                     key={questionIndex}
                     onClick={() => handleQuestionClick(themeIndex, questionIndex)}
-                    
-                    sx={{ 
+                    sx={{
                       cursor: availableQuestion(question)
-                        ? 'pointer': 'default',
+                        ? 'pointer' : 'default',
                       backgroundColor: availableQuestion(question)
                         ? theme.palette.primary.dark
                         : theme.palette.grey[100],
                       color: theme.palette.text.primary,
-                      width: 100, // Фиксированная ширина вопросов
+                      flex: 1,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      height: '100%',
                       '&:hover': availableQuestion(question) ? {
                         backgroundColor: theme.palette.primary.main,
                       } : {},
