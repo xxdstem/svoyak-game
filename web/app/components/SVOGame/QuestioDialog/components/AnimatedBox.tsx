@@ -1,13 +1,15 @@
 import React from "react";
 import { Box } from '@mui/material';
 import { keyframes } from '@mui/system';
+
 type Props = {
   duration: number;
   show: boolean;
   isPaused: boolean;
   children: React.ReactNode
 }
-export const AnimatedBox: React.FC<Props> = ({ 
+
+const AnimatedBox: React.FC<Props> = ({ 
   duration,
   show,
   isPaused,
@@ -43,6 +45,7 @@ export const AnimatedBox: React.FC<Props> = ({
       sx={{
         position: 'relative',
         overflow: 'hidden',
+        height: "100%",
       }}
     >
       <Box
@@ -51,7 +54,7 @@ export const AnimatedBox: React.FC<Props> = ({
           top: 0,
           left: 0,
           right: 0,
-          height: '4px',
+          height: '6px',
           backgroundColor: '#fff',
           animation: `${shrinkHorizontal} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
@@ -64,7 +67,7 @@ export const AnimatedBox: React.FC<Props> = ({
           top: 0,
           right: 0,
           bottom: 0,
-          width: '4px',
+          width: '6px',
           backgroundColor: '#fff',
           animation: `${shrinkVertical} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
@@ -77,7 +80,7 @@ export const AnimatedBox: React.FC<Props> = ({
           bottom: 0,
           left: 0,
           right: 0,
-          height: '4px',
+          height: '6px',
           backgroundColor: '#fff',
           animation: `${shrinkHorizontal} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
@@ -90,16 +93,16 @@ export const AnimatedBox: React.FC<Props> = ({
           top: 0,
           left: 0,
           bottom: 0,
-          width: '4px',
+          width: '6px',
           backgroundColor: '#fff',
           animation: `${shrinkVertical} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
         }}
       />
       
-      <Box>
         {children}
-      </Box>
     </Box>
   );
 };
+
+export default AnimatedBox;

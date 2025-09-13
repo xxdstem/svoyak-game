@@ -1,12 +1,12 @@
-import { Box, Button, DialogActions, DialogContent, DialogTitle, Divider, Typography, useTheme } from "@mui/material";
-import type { CurrentQuestion, Question, RoomPlayer, Theme } from "./types";
+import { Box, Button, DialogActions, DialogContent, DialogTitle, Typography, useTheme } from "@mui/material";
+import type { CurrentQuestion, Question, RoomPlayer, Theme } from "../types";
 import { $room } from "~/store/room";
 import { useSelector } from "react-redux";
-import MusicIcon from "./MusicIcon";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { $currentUser } from "~/store/user";
-import { AnimatedBox } from "./AnimatedBox";
-import { useSyncedTimer } from "./SyncedTimer";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import MusicIcon from "./components/MusicIcon";
+import AnimatedBox from "./components/AnimatedBox";
+import { useSyncedTimer } from "./components/SyncedTimer";
 
 type Props = {
     themes: Theme[];
@@ -17,7 +17,7 @@ type Props = {
 export const QuestionDialog: React.FC<Props> = (props) => {
     const { themes, currentQuestion, handleCloseQuestion  } = props;
     const default_delay = 2;
-    const question_duration = 5;
+    const question_duration = 10;
     const player_answer_duration = 10;
     
     const room = useSelector($room);
@@ -56,6 +56,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     };
 
     const answer = ()=>{
+        handleCloseQuestion();
         if(triedAnswer) return;
         setTriedAnswer(true);
         asnwerTimer.pause();
@@ -93,68 +94,73 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     const questionText = getQuestionText(question);
     const answerText = getAnswerText(question);
     const media =  getQuestionMedia(question);
+
+    const hostButtons = <>
+        <Button
+            onClick={()=>setShowAnswer(true)} 
+            color="primary" 
+            variant="contained"
+        >
+            Показать ответ
+        </Button>
+        <Button
+            onClick={()=>setShowAnswer(true)} 
+            color="warning" 
+            variant="contained"
+        >
+            Пропустить
+        </Button>
+    </>;
     
-    return (
-        <>
-        <DialogTitle sx={{ 
-            fontSize:"100%",
-            backgroundColor: theme.palette.primary.dark, 
-            color: theme.palette.text.primary 
-        }}>
-            {gameTheme.Name} за {question.Price}
+    return (<>
+        <DialogTitle mb={1} sx={{backgroundColor: theme.palette.background.paper}}>
+            <Typography variant="h2" align="center" gutterBottom>
+                {gameTheme.Name} за {question.Price}
+            </Typography>
         </DialogTitle>
-        <DialogContent sx={{pt: '16px !important'}}>
-            <AnimatedBox duration={question_duration} show={!delaying} isPaused={asnwerTimer.isPaused}>
-                <Box sx={{ display: 'flex', alignItems:"center",
-                    aspectRatio: "3/2", maxHeight: '90%', p:2,
-                    flexDirection:"column", justifyContent: 'center'}}>
-                    {(questionText || !media) && (
-                        <Typography variant="h2" mb={'1'} align="center" gutterBottom>
-                            {questionText}
-                        </Typography>
+        <AnimatedBox duration={question_duration} show={!delaying} isPaused={asnwerTimer.isPaused}>
+            <Box sx={{ display: 'flex', p: 4, height:"100%", width:"100%", alignItems:"center", overflow: "hidden",   
+                flexDirection:"column"}}>
+                {(questionText || !media) && (
+                    <Typography variant="h2" mb={'1'} align="center" gutterBottom>
+                        {questionText}
+                    </Typography>
+                )}
+                {media && <>
+                    {media.Type === 'image' && (
+                        <img
+                        src={`http://localhost:8080/files/${room.package_id}/Images/${encodeURIComponent(encodeURIComponent(media.Content))}`}
+                        alt="Question media" 
+                        style={{ minWidth: '30%', maxWidth: '90%', height: '100%' }} 
+                        />
                     )}
-                    {media && <>
-                        {media.Type === 'image' && (
-                            <img
-                            src={`http://localhost:8080/files/${room.package_id}/Images/${encodeURIComponent(encodeURIComponent(media.Content))}`}
-                            alt="Question media" 
-                            style={{ minWidth: '50%', maxWidth: '90%', maxHeight: '70vh' }} 
-                            />
-                        )}
-                            
-                        {media.Type === 'audio' && (<>
-                            <audio style={{display:"none"}} controls autoPlay>
-                            <source src={`http://localhost:8080/files/${room.package_id}/Audio/${encodeURIComponent(encodeURIComponent(media.Content))}`} type="audio/mpeg" />
-                            Ваш браузер не поддерживает аудио элемент.
-                            </audio>
-                            <MusicIcon/></>
-                        )}
-                    </>}
-                    
-                    
-                </Box>
-            </AnimatedBox>
-        </DialogContent>
+                        
+                    {media.Type === 'audio' && (<>
+                        <audio style={{display:"none"}} controls autoPlay>
+                        <source src={`http://localhost:8080/files/${room.package_id}/Audio/${encodeURIComponent(encodeURIComponent(media.Content))}`} type="audio/mpeg" />
+                        Ваш браузер не поддерживает аудио элемент.
+                        </audio>
+                        <MusicIcon/></>
+                    )}
+                </>}
+                
+                
+            </Box>
+        </AnimatedBox>
         <DialogActions sx={{ 
-            minHeight: 76,
+            mt: 2,
             justifyContent: 'space-between', 
-            padding: 2,
+            padding: 0,
             backgroundColor: theme.palette.background.default,
         }}>
             {showAnswer ? <Typography style={{margin: "auto"}} variant="h1">
                 {answerText}
                 </Typography>
             : (<>
-                {currentPlayer?.room_stats.Role == "host" ? <Button
-                onClick={()=>setShowAnswer(true)} 
-                color="primary" 
-                variant="contained"
-                >
-                Показать ответ
-                </Button> : !delaying && <Button
+                {currentPlayer?.room_stats.Role == "host" ? hostButtons : <Button
                 fullWidth
                 onClick={answer}
-                disabled={triedAnswer}
+                disabled={delaying || triedAnswer}
                 color="success" 
                 variant="contained"
                 >ОТВЕТИТЬ

@@ -11,7 +11,7 @@ import {
 
 import type { CurrentQuestion, GameData, Package, Question, RoomPlayer} from './types';
 
-import { QuestionDialog } from './QuestionDialog';
+import { QuestionDialog } from './QuestioDialog/QuestionDialog';
 import { Players } from './Players';
 import { HostBar } from './HostBar';
 import { $room, setRoomData } from '~/store/room';
@@ -113,7 +113,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
         Раунд {currentRound + 1}: {gameData?.Name}
       </Typography>
       <Box
-      sx={{ display: 'flex', flexDirection: 'column', gap: 2, paddingBottom: "150px" }}>
+      sx={{ display: 'flex', flexDirection: 'column', gap: 2, height:"100%", overflow:"auto" }}>
         {themes.map((gameTheme, themeIndex) => (
           <Box 
             key={themeIndex}
@@ -128,13 +128,13 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
               backgroundColor: theme.palette.primary.light,
               color: theme.palette.text.primary,
               width: 200, // Фиксированная ширина для темы
-              minHeight: 80, // Такая же высота, как у вопросов
+              minHeight: 50, // Такая же высота, как у вопросов
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}>
               <CardContent>
-                <Typography variant="h6" align="center">
+                <Typography variant="h6" align="center" mt={1}>
                   {gameTheme.Name}
                 </Typography>
               </CardContent>
@@ -166,7 +166,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
                     }}
                   >
                     <CardContent>
-                      <Typography variant="h5" align="center">
+                      <Typography variant="h5" mt={1} align="center">
                         {question.IsAnswered ? '' : question.Price}
                       </Typography>
                     </CardContent>
@@ -181,6 +181,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     return (
     <Box sx={{ 
       height: 'calc(100vh - 206px)', 
+      position: 'relative',
       padding: 2, 
       backgroundColor: theme.palette.background.default,
       color: theme.palette.text.primary,
@@ -193,39 +194,29 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
         </Grid>
         
         {/* Центральная колонка с вопросами */}
-        <Grid  sx={{ flexGrow: 1, flex: "1 0" }} >
+        <Grid  sx={{ flexGrow: 1, flex: "1 0 auto", height: "100%", width: 0 }} >
           <Box sx={{ 
             height: '100%', 
+            position: "relative",
             display: 'flex',
             width: "100%",
             flexDirection: 'column',
           }}>
-          {room.is_started ? questionBox : <Typography variant="h1" my={"auto"} align="center">Ожидание начала игры</Typography>}
+            {!room.is_started ? <Typography variant="h1" my={"auto"} align="center">Ожидание начала игры</Typography>
+            :(<>
+              {currentQuestion 
+              ?  <QuestionDialog themes={themes} handleCloseQuestion={handleCloseQuestion} currentQuestion={currentQuestion} />
+              : questionBox}
+            </>
+            )}
+            
+            
           </Box>
         </Grid>
       </Grid>
       
       {/* Панель игроков внизу */}
       <Players/>
-      
-      {/* Диалог вопроса */}
-      {currentQuestion && (
-        <Dialog 
-          open={!!currentQuestion} 
-          maxWidth="md"
-          fullWidth
-          slotProps={{
-            backdrop:{sx:{backdropFilter:"blur(4px)"}},
-            paper:{
-              sx: {
-                backgroundColor: theme.palette.background.paper,
-              }
-            }
-          }}
-        >
-          <QuestionDialog themes={themes} handleCloseQuestion={handleCloseQuestion} currentQuestion={currentQuestion} />
-        </Dialog>
-      )}
       
     </Box>
   );

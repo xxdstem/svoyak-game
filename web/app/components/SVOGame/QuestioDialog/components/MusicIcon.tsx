@@ -111,14 +111,14 @@ interface AnimatedMusicIconProps {
 }
 
 const MusicIcon: React.FC<AnimatedMusicIconProps> = ({
-  size = 120,
+  size = 150,
   color = '#9c27b0'
 }) => {
   return (
     <MusicContainer
       sx={{
-        marginTop: 8,
-        marginBottom: 4,
+        marginTop: 'auto',
+        marginBottom: 'auto',
         width: size,
         height: size,
         background: `linear-gradient(135deg, ${color}, ${color}66)`,
