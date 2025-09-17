@@ -19,20 +19,20 @@ export const StatusBar: React.FC = () => {
     return subscribe("answer/open", (data) => {
       setLogs(logs=>[...logs.slice(-5), `${findUserById(data.SessionID)} захотел ответить на вопрос`])
     })
-  }, [subscribe])
+  }, [subscribe, findUserById])
 
   useEffect(()=>{
     return subscribe("answer/submit", (data) => {
       setLogs(logs=>[...logs.slice(-5), `${findUserById(data.SessionID)}  ответил на вопрос: \"${data.answer}\"`])
     })
-  }, [subscribe])
+  }, [subscribe, findUserById])
   useEffect(()=>{
     return subscribe("question/select", (data) => {
       setLogs(logs=>{
         return [...logs.slice(-5), `${findUserById(data.SessionID)} выбрал вопрос`]
       })
     })
-  }, [subscribe])  
+  }, [subscribe, findUserById])  
   return <>
     <List sx={{fontSize: '10px', width: '100%'}}>
       {logs.map((log, idx) => (
