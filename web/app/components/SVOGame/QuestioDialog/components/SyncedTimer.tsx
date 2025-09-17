@@ -5,15 +5,17 @@ export const useSyncedTimer = (callback: () => void, duration: number) => {
     const remainingDuration = useRef<number>(duration);
     const startTime = useRef<number>(Date.now());
     const [isPaused, setPaused] = useState(true);
-
+    const isPausedRef = useRef(isPaused);
+    useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
+    
     const resume = useCallback(()=>{
-        if(!isPaused) return;
+        if(!isPausedRef.current) return;
         setPaused(false);
         startTime.current = Date.now();
         timeoutRef.current = setTimeout(()=>{
             callback()
         }, remainingDuration.current)
-    },[isPaused, callback]);
+    },[callback]);
 
     const start = useCallback(()=>{
         remainingDuration.current = duration;
@@ -25,11 +27,12 @@ export const useSyncedTimer = (callback: () => void, duration: number) => {
     },[duration, callback]);
     
     const pause = useCallback(() => {
-        if (isPaused) return;
+        if(isPausedRef.current) return;
         remainingDuration.current -= Date.now() - startTime.current;
         setPaused(true);
         clearTimeout(timeoutRef.current!)
-    }, [isPaused]);
+    }, []);
+    
     useEffect(()=>{
         return () => clearTimeout(timeoutRef.current!);
     }, [])
