@@ -1,4 +1,4 @@
-import { Box, List, ListItem, useTheme } from "@mui/material";
+import { Box, List, ListItem, Stack, useTheme } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useWebSocketMessages } from "~/hooks/websocketHook";
@@ -35,9 +35,11 @@ export const StatusBar: React.FC = () => {
   }, [subscribe, findUserById])  
   return <>
     <List sx={{fontSize: '10px', width: '100%'}}>
-      {logs.map((log, idx) => (
-        <ListItem key={idx} sx={{width:'100%', p:1, background: theme.palette.background.paper}}> {log} </ListItem>
-      ))}
+      <Stack spacing={1}>
+        {logs.map((log, idx) => (
+          <ListItem key={idx} sx={{width:'100%', p:1, background: theme.palette.background.paper}}> {log} </ListItem>
+        ))}
+      </Stack>
     </List>
   </>
 };

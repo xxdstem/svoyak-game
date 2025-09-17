@@ -9,6 +9,7 @@ import StarIcon from '@mui/icons-material/Star';
 import { useWebSocketMessages } from "~/hooks/websocketHook";
 import AnimatedBox from "./QuestioDialog/components/AnimatedBox";
 import { player_answer_duration } from "./consts";
+import { CustomPopper } from "./CustomPopper";
 
 export const Players: React.FC = () => {
     
@@ -136,16 +137,12 @@ export const Players: React.FC = () => {
                 </Typography>
               </Paper>
             </AnimatedBox>
-            <Popper
-              open={Boolean(player.popperText)}
+            
+            <CustomPopper
+              text={player.popperText}
               anchorEl={paperRef.current}
               placement="top"
-              sx={{ zIndex: 10 }}
-            >
-              <Box sx={{ border: 2, p: 2, bgcolor: 'background.paper', color: 'text.primary', boxShadow: 3 }}>
-                <Typography variant="body1">{player.popperText}</Typography>
-              </Box>
-            </Popper>
+            />
             </>
           )
         }

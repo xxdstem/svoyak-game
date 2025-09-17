@@ -1,12 +1,13 @@
-import { Avatar, Box, Button, Divider, Paper, Typography, useTheme } from "@mui/material"
+import { Avatar, Box, Button, Divider, Paper, Popper, Typography, useTheme } from "@mui/material"
 import type { RoomPlayer } from "./types"
-import { useMemo } from "react"
+import { useMemo, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { $currentUser, leaveRoom } from "~/store/user"
 import { useNavigate } from "react-router"
 import http from "~/utils/axios"
 import { $room, setRoomData } from "~/store/room"
 import { StatusBar } from "./StatusBar"
+import { CustomPopper } from "./CustomPopper"
 
 export const HostBar: React.FC = () => {
     
@@ -19,10 +20,13 @@ export const HostBar: React.FC = () => {
 
     const host = useMemo<RoomPlayer | undefined>(
       ()=> Object.values(room.players).find(p => p && p.room_stats.Role == "host"), [room]);
+
     const currentPlayer = useMemo<RoomPlayer | undefined>(
       () => Object.values(room.players).find(p => p && p.id == user?.session_id), [room]);
     
     const readyToStart = useMemo<boolean>(()=> Object.values(room.players).filter(p => p && p.room_stats.Role == "player").length > 0, [room])
+
+    const hostRef = useRef(null);
 
     const handleAbortGame = async () =>{
       if(window.confirm("Вы уверены?")){
@@ -69,20 +73,25 @@ export const HostBar: React.FC = () => {
       flexDirection: 'column',
       alignItems: 'center',
     }}>
-      {host ? <>
-        <Avatar sx={{ 
-          width: 80, 
-          height: 80, 
-          bgcolor: host.color, 
-          fontSize: '2rem',
-          marginBottom: 2,
-        }}>
-          ?
-        </Avatar>
-        <Typography variant="h6" gutterBottom>
-          {host.username}
-        </Typography></>
-        : !currentPlayer ?  <Paper key={-1} onClick={joinAsHost}
+      {host ?
+        <Box textAlign={"center"} ref={hostRef}>
+          <Avatar sx={{ 
+            width: 80, 
+            height: 80, 
+            bgcolor: host.color, 
+            fontSize: '2rem',
+            marginBottom: 2,
+          }}>
+            ?
+          </Avatar>
+          <Typography variant="h6" gutterBottom>
+            {host.username}
+          </Typography>
+          
+          <CustomPopper anchorEl={hostRef.current} text={host.popperText}/>
+        </Box>
+        : !currentPlayer ? 
+        <Paper key={-1} onClick={joinAsHost}
           elevation={3} sx={{ 
           padding: 2,
           minWidth: 150,

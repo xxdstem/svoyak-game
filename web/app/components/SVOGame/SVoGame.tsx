@@ -18,6 +18,7 @@ import { $room, setPlayerPopper, setRoomData } from '~/store/room';
 import { useDispatch, useSelector } from 'react-redux';
 import { $currentUser } from '~/store/user';
 import { useWebSocketMessages } from '~/hooks/websocketHook';
+import { default_delay } from './consts';
 
 export const Game: React.FC<{pkg: Package}> = (state) => {
     const { pkg } = state
@@ -37,7 +38,8 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     const gameData = rounds[currentRound];
 
     const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p => p && p.id == user?.session_id), [room.players]);
-        
+    const host = useMemo<RoomPlayer | undefined>(
+      ()=> Object.values(room.players).find(p => p && p.room_stats.Role == "host"), [room]);  
     
     const [themes, setThemesState] = useState(Object.assign({}, gameData).Themes);
 
@@ -68,6 +70,11 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
       if(themes.every(t => t.Questions.every(q => q.IsAnswered))){
         nextRound();
       }
+      const questionPicker = Object.values(room.players).find((p)=> p && p.room_stats.QuestionPicker);
+      dispatch(setPlayerPopper({ 
+        id: host!.id,
+        popperText: `Выбирайте вопрос, ${questionPicker?.username}!`
+      }))
     }, [themes]);
   
     // Временное решение, пока нет вебсокета
@@ -93,12 +100,16 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
         const theme = themes[themeIndex];
         const question = theme.Questions[questionIndex];
         dispatch(setPlayerPopper({ 
+          id: host!.id,
+          popperText: null
+        }))
+        dispatch(setPlayerPopper({ 
           id: data.SessionID,
           popperText: `${theme.Name} за ${question.Price}`
         }))
         setTimeout(()=>{
           dispatch(setPlayerPopper({id: data.SessionID, popperText: null}))
-        }, 5000);
+        }, default_delay * 1000);
         setThemesState(prev => {
           const newThemes = prev.map((theme, tIdx) => {
             if (tIdx !== themeIndex) return theme;
