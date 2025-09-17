@@ -6,6 +6,7 @@ import { $currentUser, leaveRoom } from "~/store/user"
 import { useNavigate } from "react-router"
 import http from "~/utils/axios"
 import { $room, setRoomData } from "~/store/room"
+import { StatusBar } from "./StatusBar"
 
 export const HostBar: React.FC = () => {
     
@@ -152,5 +153,7 @@ export const HostBar: React.FC = () => {
       >
         Покинуть игру
       </Button>
+      <Divider  sx={{ width: '100%', mb: 2 }}/>
+      <StatusBar/>
     </Paper>
 }
