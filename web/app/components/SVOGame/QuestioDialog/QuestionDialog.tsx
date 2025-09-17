@@ -31,6 +31,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   const [answer, setAnswer] = useState("");
 
   const userAnswerTimeout = useRef<NodeJS.Timeout>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const answerTimer = useSyncedTimer(()=>{
     setShowAnswer(true);
@@ -69,8 +70,10 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     return subscribe("answer/open", (data) => {
       if(data.SessionID == currentPlayer?.id) return;
       answerTimer.pause();
+      audioRef.current?.pause();
       userAnswerTimeout.current = setTimeout(()=>{
         answerTimer.resume();
+        audioRef.current?.play();
       }, player_answer_duration * 1000);
     })
   }, [subscribe, answerTimer])
@@ -80,7 +83,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
       if(data.SessionID == currentPlayer?.id) return;
       // TODO: 
       // Запускаем новый таймер, ожидаем пока ХОСТ решит правильный-ли ответ
-
+      audioRef.current?.play();
       answerTimer.resume();
       clearTimeout(userAnswerTimeout.current!);
     })
@@ -109,6 +112,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   const handleShowAnswerDialog = () => {
     if(delaying || triedAnswer || answerTimer.isPaused) return;
     sendMessage("answer/open", {})
+    audioRef.current?.pause();
     setTriedAnswer(true);
     setShowAnswerDialog(true);
     answerTimer.pause();
@@ -124,6 +128,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   const handleAnswerSubmit = () => {
     sendMessage("answer/submit", {answer});
     setShowAnswerDialog(false);
+    audioRef.current?.play();
     answerTimer.resume();
     clearTimeout(userAnswerTimeout.current!);
   }
@@ -207,7 +212,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
           )}
               
           {media.Type === 'audio' && (<>
-            <audio style={{display:"none"}} controls autoPlay>
+            <audio ref={audioRef} style={{visibility:"hidden"}} controls autoPlay>
             <source src={`http://localhost:8080/files/${room.package_id}/Audio/${encodeURIComponent(encodeURIComponent(media.Content))}`} type="audio/mpeg" />
             Ваш браузер не поддерживает аудио элемент.
             </audio>
