@@ -5,14 +5,16 @@ import { keyframes } from '@mui/system';
 type Props = {
   duration: number;
   show: boolean;
-  isPaused: boolean;
+  isPaused?: boolean;
+  color?: string;
   children: React.ReactNode
 }
 
 const AnimatedBox: React.FC<Props> = ({ 
   duration,
   show,
-  isPaused,
+  isPaused = false,
+  color = "#fff",
   children
 }) => {
 
@@ -44,18 +46,18 @@ const AnimatedBox: React.FC<Props> = ({
     <Box
       sx={{
         position: 'relative',
-        overflow: 'hidden',
+        overflow: 'visible',
         height: "100%",
       }}
     >
       <Box
         sx={{
           position: 'absolute',
-          top: 0,
+          top: '-6px',
           left: 0,
           right: 0,
           height: '6px',
-          backgroundColor: '#fff',
+          backgroundColor: color,
           animation: `${shrinkHorizontal} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
         }}
@@ -65,10 +67,10 @@ const AnimatedBox: React.FC<Props> = ({
         sx={{
           position: 'absolute',
           top: 0,
-          right: 0,
+          right: '-6px',
           bottom: 0,
           width: '6px',
-          backgroundColor: '#fff',
+          backgroundColor: color,
           animation: `${shrinkVertical} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
         }}
@@ -77,11 +79,11 @@ const AnimatedBox: React.FC<Props> = ({
       <Box
         sx={{
           position: 'absolute',
-          bottom: 0,
+          bottom: '-6px',
           left: 0,
           right: 0,
           height: '6px',
-          backgroundColor: '#fff',
+          backgroundColor: color,
           animation: `${shrinkHorizontal} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
         }}
@@ -91,10 +93,10 @@ const AnimatedBox: React.FC<Props> = ({
         sx={{
           position: 'absolute',
           top: 0,
-          left: 0,
+          left: '-6px',
           bottom: 0,
           width: '6px',
-          backgroundColor: '#fff',
+          backgroundColor: color,
           animation: `${shrinkVertical} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
         }}
