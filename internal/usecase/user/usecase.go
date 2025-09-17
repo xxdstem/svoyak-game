@@ -50,12 +50,12 @@ func (uc *uc) GetUser(r *http.Request) *entity.User {
 }
 
 func (uc *uc) SetWsState(user *entity.User, state *websocket.Client) {
-	room := user.Room
-	if room == nil {
-		return
-	}
 	if user.Ws != state {
 		user.Ws = state
+		room := user.Room
+		if room == nil {
+			return
+		}
 		if user.RoomStats == nil {
 			return
 		}
