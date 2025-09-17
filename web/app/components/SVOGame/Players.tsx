@@ -2,7 +2,7 @@ import { Avatar, Box, Button, Paper, Popper, Typography, useTheme } from "@mui/m
 import { useDispatch, useSelector } from "react-redux";
 import { $room, setPlayerPopper, setRoomData } from "~/store/room";
 import { type RoomDetails, type RoomPlayer } from "./types";
-import { createRef, useEffect, useMemo, useRef, useState } from "react";
+import React, { createRef, useEffect, useMemo, useRef, useState } from "react";
 import { $currentUser } from "~/store/user";
 import http from "~/utils/axios";
 import StarIcon from '@mui/icons-material/Star';
@@ -107,8 +107,8 @@ export const Players: React.FC = () => {
             paperRefs.current[player.id] = createRef<HTMLDivElement>();
           }
           const paperRef = paperRefs.current[player.id];
-          return (<>
-            <AnimatedBox key={slot} duration={player_answer_duration} color="yellow" show={answeringPlayerID == player.id}>
+          return (<React.Fragment key={slot}>
+            <AnimatedBox  duration={player_answer_duration} color="yellow" show={answeringPlayerID == player.id}>
               <Paper elevation={1} ref={paperRef} sx={{ 
                 padding: 2,
                 minWidth: 150,
@@ -143,7 +143,7 @@ export const Players: React.FC = () => {
               anchorEl={paperRef.current}
               placement="top"
             />
-            </>
+            </React.Fragment>
           )
         }
       }
