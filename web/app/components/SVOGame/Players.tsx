@@ -1,8 +1,8 @@
-import { Avatar, Box, Button, Paper, Typography, useTheme } from "@mui/material"
+import { Avatar, Box, Button, Paper, Popper, Typography, useTheme } from "@mui/material"
 import { useDispatch, useSelector } from "react-redux";
-import { $room, setRoomData } from "~/store/room";
+import { $room, setPlayerPopper, setRoomData } from "~/store/room";
 import { type RoomDetails, type RoomPlayer } from "./types";
-import { useEffect, useMemo, useState } from "react";
+import { createRef, useEffect, useMemo, useRef, useState } from "react";
 import { $currentUser } from "~/store/user";
 import http from "~/utils/axios";
 import StarIcon from '@mui/icons-material/Star';
@@ -24,6 +24,8 @@ export const Players: React.FC = () => {
   
   const [answeringPlayerID, setAnsweringPlayerID] = useState<string>("");
 
+  const paperRefs = useRef<Record<string, React.RefObject<HTMLDivElement | null>>>({});
+
   useEffect(()=>{
     return subscribe("answer/open", (data) => {
       setAnsweringPlayerID(data.SessionID);
@@ -35,7 +37,11 @@ export const Players: React.FC = () => {
 
   useEffect(()=>{
     return subscribe("answer/submit", (data) => {
+      dispatch(setPlayerPopper({ id: data.SessionID, popperText: data.answer == "" ? "Не знаю" : data.answer}))
       setAnsweringPlayerID("");
+      setTimeout(()=>{
+        dispatch(setPlayerPopper({id: data.SessionID, popperText: null}))
+      }, 5000);
     })
   }, [subscribe])
 
@@ -57,69 +63,93 @@ export const Players: React.FC = () => {
     left: 0,
     right: 0,
     backgroundColor: theme.palette.background.paper,
-    padding: 2,
+    padding: 1,
     display: 'flex',
     justifyContent: 'center',
     gap: 2,
   }}>
     {Object.entries(room.players)
       .filter(([slot]) => parseInt(slot) >= 0)
-      .map(([slot, player]) => !player ? !room.is_started && (
-        <Paper key={slot} onClick={()=>joinAsUser(parseInt(slot))}
-          elevation={3} sx={{ 
-          padding: 2,
-          minWidth: 150,
-          backgroundColor: theme.palette.background.default,
-          color: "#fff",
-          cursor: !currentPlayer ? "pointer" : "default"
-        }}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Box sx={{ display: 'flex', flexDirection:"column", alignItems: 'center' }}>
-              <Avatar sx={{ 
-                width: 40, 
-                height: 40, 
-                bgcolor: 'rgba(0, 0, 0, 0.1)',
-                color: "rgba(255, 255, 255, 0.5)",
-                marginBottom: 1,
+      .map(([slot, player]) => {
+        if (!player) {
+          if(!room.is_started){
+            return (
+              <Paper key={slot} onClick={()=>joinAsUser(parseInt(slot))}
+                elevation={3} sx={{ 
+                padding: 2,
+                minWidth: 150,
+                backgroundColor: theme.palette.background.default,
+                color: "#fff",
+                cursor: !currentPlayer ? "pointer" : "default"
               }}>
-                ?
-              </Avatar>
-              <Typography variant="subtitle1" color='#fff'>
-                {!currentPlayer ? "Занять слот" : "Ожидаем игрока"}
-              </Typography>
-            </Box>
-          </Box>
-        </Paper>
-      ) :
-        <AnimatedBox key={slot} duration={player_answer_duration} color="yellow" show={answeringPlayerID == player.id}>
-          <Paper elevation={1} sx={{ 
-            padding: 2,
-            minWidth: 150,
-            border: !player.ws_connected ? "2px solid red" : "",
-            opacity: !player.ws_connected ? 0.5 : 1,
-            backgroundColor: player.color,
-            color: "#fff",
-          }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', flexDirection:"row", alignItems: 'center' }}>
-                <Avatar sx={{ 
-                  width: 40, 
-                  height: 40, 
-                  bgcolor: 'rgba(0, 0, 0, 0.2)',
-                  marginRight: 2,
-                }}>
-                  ?
-                </Avatar>
-                <Typography variant="h6" color='#fff'>
-                  {player.username} {player.room_stats.QuestionPicker &&  <StarIcon sx={{marginBottom: '-3px'}} fontSize="small" />}
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', flexDirection:"column", alignItems: 'center' }}>
+                    <Avatar sx={{ 
+                      width: 40, 
+                      height: 40, 
+                      bgcolor: 'rgba(0, 0, 0, 0.1)',
+                      color: "rgba(255, 255, 255, 0.5)",
+                      marginBottom: 1,
+                    }}>
+                      ?
+                    </Avatar>
+                    <Typography variant="subtitle1" color='#fff'>
+                      {!currentPlayer ? "Занять слот" : "Ожидаем игрока"}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Paper>
+            )
+          }
+        }else{
+          if (!paperRefs.current[player.id]) {
+            paperRefs.current[player.id] = createRef<HTMLDivElement>();
+          }
+          const paperRef = paperRefs.current[player.id];
+          return (<>
+            <AnimatedBox key={slot} duration={player_answer_duration} color="yellow" show={answeringPlayerID == player.id}>
+              <Paper elevation={1} ref={paperRef} sx={{ 
+                padding: 2,
+                minWidth: 150,
+                border: !player.ws_connected ? "2px solid red" : "",
+                opacity: !player.ws_connected ? 0.5 : 1,
+                backgroundColor: player.color,
+                color: "#fff",
+              }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', flexDirection:"row", alignItems: 'center' }}>
+                    <Avatar sx={{ 
+                      width: 40, 
+                      height: 40, 
+                      bgcolor: 'rgba(0, 0, 0, 0.2)',
+                      marginRight: 2,
+                    }}>
+                      ?
+                    </Avatar>
+                    <Typography variant="h6" color='#fff'>
+                      {player.username} {player.room_stats.QuestionPicker &&  <StarIcon sx={{marginBottom: '-3px'}} fontSize="small" />}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Typography variant="h4" align="center" sx={{ marginTop: 1 }}>
+                  {player.room_stats.Points} 
                 </Typography>
+              </Paper>
+            </AnimatedBox>
+            <Popper
+              open={Boolean(player.popperText)}
+              anchorEl={paperRef.current}
+              placement="top"
+              sx={{ zIndex: 10 }}
+            >
+              <Box sx={{ border: 2, p: 2, bgcolor: 'background.paper', color: 'text.primary', boxShadow: 3 }}>
+                <Typography variant="body1">{player.popperText}</Typography>
               </Box>
-            </Box>
-            <Typography variant="h4" align="center" sx={{ marginTop: 1 }}>
-              {player.room_stats.Points} 
-            </Typography>
-          </Paper>
-        </AnimatedBox>
-      )}
+            </Popper>
+            </>
+          )
+        }
+      }
+    )}
   </Box>
 }

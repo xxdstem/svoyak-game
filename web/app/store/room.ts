@@ -12,11 +12,20 @@ const roomSlice = createSlice({
   reducers: {
     setRoomData(state, action) {
       return action.payload
+    },
+    setPlayerPopper(state: RoomDetails | null, action) {
+      const { id, popperText } = action.payload;
+      if (!state || !state.players) return;
+      Object.values(state.players).forEach(player => {
+        if (player && player.id === id) {
+          player.popperText = popperText;
+        }
+      });
     }
   }
 });
 
-export const { setRoomData } = roomSlice.actions;
+export const { setRoomData, setPlayerPopper } = roomSlice.actions;
 export const $room = (state: RootState) => state.room;
 
 export default roomSlice.reducer;

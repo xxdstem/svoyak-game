@@ -14,7 +14,7 @@ import type { CurrentQuestion, GameData, Package, Question, RoomPlayer} from './
 import { QuestionDialog } from './QuestioDialog/QuestionDialog';
 import { Players } from './Players';
 import { HostBar } from './HostBar';
-import { $room, setRoomData } from '~/store/room';
+import { $room, setPlayerPopper, setRoomData } from '~/store/room';
 import { useDispatch, useSelector } from 'react-redux';
 import { $currentUser } from '~/store/user';
 import { useWebSocketMessages } from '~/hooks/websocketHook';
@@ -90,6 +90,15 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     useEffect(()=>{
       return subscribe("question/select", (data) => {
         const { themeIndex, questionIndex } = data;
+        const theme = themes[themeIndex];
+        const question = theme.Questions[questionIndex];
+        dispatch(setPlayerPopper({ 
+          id: data.SessionID,
+          popperText: `${theme.Name} за ${question.Price}`
+        }))
+        setTimeout(()=>{
+          dispatch(setPlayerPopper({id: data.SessionID, popperText: null}))
+        }, 5000);
         setThemesState(prev => {
           const newThemes = prev.map((theme, tIdx) => {
             if (tIdx !== themeIndex) return theme;
@@ -101,7 +110,6 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
             };
           });
           // Открываем диалог с вопросом
-          const question = newThemes[themeIndex].Questions[questionIndex];
           setCurrentQuestion({ themeIndex, question });
           return newThemes;
         });

@@ -30,7 +30,7 @@ export type Question = {
   Right: {
     Answers: string[];
   };
-  IsAnswered?: boolean;
+  IsAnswered: boolean;
 };
 
 export type Theme = {
@@ -59,6 +59,7 @@ export type RoomPlayer = {
   id: string;
   username: string;
   color: string;
+  popperText?: string;
   ws_connected: boolean;
   room_stats: RoomStats;
 }
