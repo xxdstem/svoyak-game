@@ -8,6 +8,7 @@ import MusicIcon from "./components/MusicIcon";
 import AnimatedBox from "./components/AnimatedBox";
 import { useSyncedTimer } from "./components/SyncedTimer";
 import { useWebSocketMessages } from "~/hooks/websocketHook";
+import { default_delay, player_answer_duration, question_duration } from "../consts";
 
 type Props = {
     themes: Theme[];
@@ -17,10 +18,7 @@ type Props = {
 
 export const QuestionDialog: React.FC<Props> = (props) => {
   const { themes, currentQuestion, handleCloseQuestion  } = props;
-  const default_delay = 2;
-  const question_duration = 10;
-  const player_answer_duration = 10;
-  
+
   const room = useSelector($room);
   const user = useSelector($currentUser);
   const theme = useTheme();
@@ -31,8 +29,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   const [triedAnswer, setTriedAnswer] = useState(false);
   const [showAnswerDialog, setShowAnswerDialog] = useState(false);
   const [answer, setAnswer] = useState("");
-  
-  
+
   const userAnswerTimeout = useRef<NodeJS.Timeout>(null);
 
   const answerTimer = useSyncedTimer(()=>{
@@ -41,6 +38,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
         handleCloseQuestion()
     }, default_delay * 1000);
   }, question_duration * 1000)
+
   const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p=>p != null && p.id == user?.session_id), [room]);
 
   // Получение медиа (изображения/аудио) вопроса
@@ -73,7 +71,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
       answerTimer.pause();
       userAnswerTimeout.current = setTimeout(()=>{
         answerTimer.resume();
-    }, player_answer_duration * 1000);
+      }, player_answer_duration * 1000);
     })
   }, [subscribe, answerTimer])
 
