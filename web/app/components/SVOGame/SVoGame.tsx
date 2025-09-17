@@ -56,7 +56,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     const handleQuestionClick = (themeIndex: number, questionIndex: number) => {
       const question = themes[themeIndex].Questions[questionIndex];
       if(!question || !availableQuestion(question)) return;
-      sendMessage("select_question", {themeIndex, questionIndex})
+      sendMessage("question/select", {themeIndex, questionIndex})
     };
 
     const nextRound = () => {
@@ -88,7 +88,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     }, [subscribe, dispatch])
 
     useEffect(()=>{
-      return subscribe("select_question", (data) => {
+      return subscribe("question/select", (data) => {
         const { themeIndex, questionIndex } = data;
         setThemesState(prev => {
           const newThemes = prev.map((theme, tIdx) => {

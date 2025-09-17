@@ -40,7 +40,7 @@ func NewWSHandler(l *logger.Logger, server *websocket.WebSocketServer, store Sto
 }
 
 func (h *WSHandler) Register() {
-	h.server.RegisterHandler("select_question", h.SelectQustion)
+	h.server.RegisterHandler("question/select", h.SelectQustion)
 }
 
 func (h *WSHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +58,6 @@ func (h *WSHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *WSHandler) SelectQustion(client *websocket.Client, message websocket.Message) {
-	log.Info("SelectQustion")
 	user := h.store.FindUserByID(client.SessionID)
 	if user == nil || user.Room == nil {
 		return
