@@ -185,7 +185,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
       </Box>
     </DialogTitle>
     <AnimatedBox duration={question_duration} show={!delaying} isPaused={answerTimer.isPaused}>
-      <Box sx={{ display: 'flex', p: 4, height:"100%", width:"100%", alignItems:"center", overflow: "hidden",   
+      <Box sx={{ display: 'flex', p: 3, height:"100%", width:"100%", alignItems:"center", overflow: "hidden",   
         flexDirection:"column"}}>
         {(questionText || !media) && (
           <Typography variant="h2" mb={'1'} align="center" gutterBottom>
@@ -197,7 +197,12 @@ export const QuestionDialog: React.FC<Props> = (props) => {
             <img
             src={`http://localhost:8080/files/${room.package_id}/Images/${encodeURIComponent(encodeURIComponent(media.Content))}`}
             alt="Question media" 
-            style={{ minWidth: '30%', maxWidth: '90%', height: '100%' }} 
+            style={{ maxWidth: '100%',
+              maxHeight: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              display: 'block',
+              margin: '0 auto'}} 
             />
           )}
               
