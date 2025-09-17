@@ -40,7 +40,9 @@ func NewWSHandler(l *logger.Logger, server *websocket.WebSocketServer, store Sto
 }
 
 func (h *WSHandler) Register() {
-	h.server.RegisterHandler("question/select", h.SelectQustion)
+	h.server.RegisterHandler("question/select", h.QuestionSelect)
+	h.server.RegisterHandler("answer/open", h.AnswerOpen)
+	h.server.RegisterHandler("answer/submit", h.AnswerSubmit)
 }
 
 func (h *WSHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
@@ -57,12 +59,11 @@ func (h *WSHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	h.uuc.SetWsState(user, ws)
 }
 
-func (h *WSHandler) SelectQustion(client *websocket.Client, message websocket.Message) {
+func (h *WSHandler) QuestionSelect(client *websocket.Client, message websocket.Message) {
 	user := h.store.FindUserByID(client.SessionID)
 	if user == nil || user.Room == nil {
 		return
 	}
-	user.Room.Broadcast(message)
 	// TODO:
 	// Сделать это не через жопу?
 	payload, ok := message.Payload.(map[string]any)
@@ -70,5 +71,35 @@ func (h *WSHandler) SelectQustion(client *websocket.Client, message websocket.Me
 		log.Error("cannot convert")
 		return
 	}
+	payload["SessionID"] = user.SessionID
+	user.Room.Broadcast(websocket.Message{Type: message.Type, Payload: payload})
 	h.guc.SelectQustion(user.Room, int(payload["themeIndex"].(float64)), int(payload["questionIndex"].(float64)))
+}
+
+func (h *WSHandler) AnswerOpen(client *websocket.Client, message websocket.Message) {
+	user := h.store.FindUserByID(client.SessionID)
+	if user == nil || user.Room == nil {
+		return
+	}
+	payload, ok := message.Payload.(map[string]any)
+	if !ok {
+		log.Error("cannot convert")
+		return
+	}
+	payload["SessionID"] = user.SessionID
+	user.Room.Broadcast(websocket.Message{Type: message.Type, Payload: payload})
+
+}
+func (h *WSHandler) AnswerSubmit(client *websocket.Client, message websocket.Message) {
+	user := h.store.FindUserByID(client.SessionID)
+	if user == nil || user.Room == nil {
+		return
+	}
+	payload, ok := message.Payload.(map[string]any)
+	if !ok {
+		log.Error("cannot convert")
+		return
+	}
+	payload["SessionID"] = user.SessionID
+	user.Room.Broadcast(websocket.Message{Type: message.Type, Payload: payload})
 }
