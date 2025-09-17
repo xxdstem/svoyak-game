@@ -74,8 +74,8 @@ export const HostBar: React.FC = () => {
       alignItems: 'center',
     }}>
       {host ?
-        <Box textAlign={"center"} ref={hostRef}>
-          <Avatar sx={{ 
+        <Box textAlign={"center"}>
+          <Avatar ref={hostRef} sx={{ 
             width: 80, 
             height: 80, 
             bgcolor: host.color, 
