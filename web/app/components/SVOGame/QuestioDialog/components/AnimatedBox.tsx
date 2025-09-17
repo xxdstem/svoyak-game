@@ -40,25 +40,26 @@ const AnimatedBox: React.FC<Props> = ({
     }
   `;
 
-  if(!show) return children;
-
   return (
     <Box
       sx={{
         position: 'relative',
-        overflow: 'visible',
-        height: "100%",
+        overflow: 'hidden',
+        display: "flex",
+        alignItems: "center",
+        padding:"6px",
+        height: '100%'
       }}
     >
       <Box
         sx={{
           position: 'absolute',
-          top: '-6px',
+          top: 0,
           left: 0,
           right: 0,
           height: '6px',
-          backgroundColor: color,
-          animation: `${shrinkHorizontal} ${duration}s linear forwards`,
+          backgroundColor: show ? color : "transparent",
+          animation: !show ? "" :  `${shrinkHorizontal} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
         }}
       />
@@ -67,11 +68,11 @@ const AnimatedBox: React.FC<Props> = ({
         sx={{
           position: 'absolute',
           top: 0,
-          right: '-6px',
+          right: 0,
           bottom: 0,
           width: '6px',
-          backgroundColor: color,
-          animation: `${shrinkVertical} ${duration}s linear forwards`,
+          backgroundColor: show ? color : "transparent",
+          animation: !show ? "" :  `${shrinkVertical} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
         }}
       />
@@ -79,12 +80,12 @@ const AnimatedBox: React.FC<Props> = ({
       <Box
         sx={{
           position: 'absolute',
-          bottom: '-6px',
+          bottom: 0,
           left: 0,
           right: 0,
           height: '6px',
-          backgroundColor: color,
-          animation: `${shrinkHorizontal} ${duration}s linear forwards`,
+          backgroundColor: show ? color : "transparent",
+          animation: !show ? "" :  `${shrinkHorizontal} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
         }}
       />
@@ -93,11 +94,11 @@ const AnimatedBox: React.FC<Props> = ({
         sx={{
           position: 'absolute',
           top: 0,
-          left: '-6px',
+          left: 0,
           bottom: 0,
           width: '6px',
-          backgroundColor: color,
-          animation: `${shrinkVertical} ${duration}s linear forwards`,
+          backgroundColor: show ? color : "transparent",
+          animation: !show ? "" :  `${shrinkVertical} ${duration}s linear forwards`,
           animationPlayState: isPaused ? "paused" : "running"
         }}
       />
