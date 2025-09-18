@@ -19,6 +19,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { $currentUser } from '~/store/user';
 import { useWebSocketMessages } from '~/hooks/websocketHook';
 import { default_delay } from './consts';
+import { QuestionHostDialog } from './QuestionHostDialog';
+import { useTimedPopper } from '~/hooks/timedPopper';
 
 export const Game: React.FC<{pkg: Package}> = (state) => {
     const { pkg } = state
@@ -29,6 +31,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     const theme = useTheme();
     const dispatch = useDispatch();
     const { subscribe, sendMessage } = useWebSocketMessages();
+    const showTimedPopper = useTimedPopper();
     const room = useSelector($room);
     
     const user = useSelector($currentUser);
@@ -40,6 +43,8 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p => p && p.id == user?.session_id), [room.players]);
     const host = useMemo<RoomPlayer | undefined>(
       ()=> Object.values(room.players).find(p => p && p.room_stats.Role == "host"), [room]);  
+
+    const isImHost = currentPlayer == host;
     
     const [themes, setThemesState] = useState(Object.assign({}, gameData).Themes);
 
@@ -103,13 +108,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
           id: host!.id,
           popperText: null
         }))
-        dispatch(setPlayerPopper({ 
-          id: data.SessionID,
-          popperText: `${theme.Name} за ${question.Price}`
-        }))
-        setTimeout(()=>{
-          dispatch(setPlayerPopper({id: data.SessionID, popperText: null}))
-        }, default_delay * 1000);
+        showTimedPopper(data.SessionID, `${theme.Name} за ${question.Price}`, default_delay * 1000)
         setThemesState(prev => {
           const newThemes = prev.map((theme, tIdx) => {
             if (tIdx !== themeIndex) return theme;
@@ -125,7 +124,9 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
           return newThemes;
         });
       })
-    },[subscribe, dispatch])
+    },[subscribe, dispatch, host])
+
+    
 
     const questionBox = (<>
       <Typography variant="h2" align="center" gutterBottom sx={{ marginBottom: 3 }}>
@@ -222,12 +223,10 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
               : questionBox}
             </>
             )}
-            
-            
           </Box>
         </Grid>
       </Grid>
-      
+      {isImHost && currentQuestion && <QuestionHostDialog question={currentQuestion.question}/>}
       {/* Панель игроков внизу */}
       <Players/>
       

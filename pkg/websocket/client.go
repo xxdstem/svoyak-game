@@ -32,6 +32,12 @@ func (c *Client) readPump(server *WebSocketServer) {
 		}
 
 		if handler, exists := server.messageHandlers[message.Type]; exists {
+			payload, ok := message.Payload.(map[string]any)
+			if !ok {
+				return
+			}
+			payload["SessionID"] = c.SessionID
+			message.Payload = payload
 			handler(c, message)
 		}
 	}

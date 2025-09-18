@@ -78,3 +78,11 @@ func (uc *uc) SelectQustion(room *entity.Room, themeIdx int, questionIdx int) {
 	currentRound := room.Package.Rounds[room.CurrentRound]
 	currentRound.Themes[themeIdx].Questions[questionIdx].IsAnswered = true
 }
+
+func (uc *uc) ChangePlayerScore(player *entity.User, score int) {
+	player.RoomStats.Points += score
+	player.Room.Broadcast(websocket.Message{
+		Type:    "updated_room",
+		Payload: dto.RoomDetailedResponse(player.Room),
+	})
+}

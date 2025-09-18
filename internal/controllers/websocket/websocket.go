@@ -15,6 +15,7 @@ type Store interface {
 
 type GameUseCase interface {
 	SelectQustion(room *entity.Room, themeIdx int, questionIdx int)
+	ChangePlayerScore(player *entity.User, score int)
 }
 
 type RoomUseCase interface {
@@ -43,6 +44,7 @@ func (h *WSHandler) Register() {
 	h.server.RegisterHandler("question/select", h.QuestionSelect)
 	h.server.RegisterHandler("answer/open", h.AnswerOpen)
 	h.server.RegisterHandler("answer/submit", h.AnswerSubmit)
+	h.server.RegisterHandler("player/score", h.PlayerScore)
 }
 
 func (h *WSHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
@@ -71,8 +73,7 @@ func (h *WSHandler) QuestionSelect(client *websocket.Client, message websocket.M
 		log.Error("cannot convert")
 		return
 	}
-	payload["SessionID"] = user.SessionID
-	user.Room.Broadcast(websocket.Message{Type: message.Type, Payload: payload})
+	user.Room.Broadcast(message)
 	h.guc.SelectQustion(user.Room, int(payload["themeIndex"].(float64)), int(payload["questionIndex"].(float64)))
 }
 
@@ -81,16 +82,19 @@ func (h *WSHandler) AnswerOpen(client *websocket.Client, message websocket.Messa
 	if user == nil || user.Room == nil {
 		return
 	}
-	payload, ok := message.Payload.(map[string]any)
-	if !ok {
-		log.Error("cannot convert")
-		return
-	}
-	payload["SessionID"] = user.SessionID
-	user.Room.Broadcast(websocket.Message{Type: message.Type, Payload: payload})
+	user.Room.Broadcast(message)
 
 }
+
 func (h *WSHandler) AnswerSubmit(client *websocket.Client, message websocket.Message) {
+	user := h.store.FindUserByID(client.SessionID)
+	if user == nil || user.Room == nil {
+		return
+	}
+	user.Room.Broadcast(message)
+}
+
+func (h *WSHandler) PlayerScore(client *websocket.Client, message websocket.Message) {
 	user := h.store.FindUserByID(client.SessionID)
 	if user == nil || user.Room == nil {
 		return
@@ -100,6 +104,12 @@ func (h *WSHandler) AnswerSubmit(client *websocket.Client, message websocket.Mes
 		log.Error("cannot convert")
 		return
 	}
-	payload["SessionID"] = user.SessionID
-	user.Room.Broadcast(websocket.Message{Type: message.Type, Payload: payload})
+	score := int(payload["score"].(float64))
+	playerId := payload["playerId"].(string)
+	player := h.store.FindUserByID(playerId)
+	if player == nil || player.Room == nil || player.Room != user.Room {
+		return
+	}
+	h.guc.ChangePlayerScore(player, score)
+	user.Room.Broadcast(message)
 }
