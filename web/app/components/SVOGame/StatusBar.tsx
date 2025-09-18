@@ -33,6 +33,22 @@ export const StatusBar: React.FC = () => {
       })
     })
   }, [subscribe, findUserById])  
+  useEffect(()=>{
+    return subscribe("player/score", (data)=>{
+      let text;
+      if(data.score < 0){
+        text = `отвечает неверно (${data.score})`
+      }else{
+        text = `отвчеает правильно (+${data.score})`
+        
+      }
+      setLogs(logs=>{
+        return [...logs.slice(-5), `${findUserById(data.SessionID)} ${text}`]
+      })
+      
+    })
+  }, [subscribe, findUserById])
+
   return <>
     <List sx={{fontSize: '10px', width: '100%'}}>
       <Stack spacing={1}>
