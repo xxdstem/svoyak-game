@@ -9,6 +9,7 @@ import AnimatedBox from "./components/AnimatedBox";
 import { useSyncedTimer } from "./components/SyncedTimer";
 import { useWebSocketMessages } from "~/hooks/websocketHook";
 import { default_delay, player_answer_duration, question_duration } from "../consts";
+import { useTimedPopper } from "../../../hooks/timedPopper";
 
 type Props = {
     themes: Theme[];
@@ -19,11 +20,13 @@ type Props = {
 export const QuestionDialog: React.FC<Props> = (props) => {
   const { themes, currentQuestion, handleCloseQuestion  } = props;
 
+  const dispatch = useDispatch();
   const room = useSelector($room);
   const user = useSelector($currentUser);
   const theme = useTheme();
   const { sendMessage, subscribe } = useWebSocketMessages();
-
+  const showTimedPopper = useTimedPopper();
+  
   const [delaying, setDelaying] = useState(true);
   const [showAnswer, setShowAnswer] = useState(false);
   const [triedAnswer, setTriedAnswer] = useState(false);
@@ -32,7 +35,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
 
   const userAnswerTimeout = useRef<NodeJS.Timeout>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-
+  
   const answerTimer = useSyncedTimer(()=>{
     setShowAnswer(true);
     setTimeout(()=>{
@@ -41,7 +44,8 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   }, question_duration * 1000)
 
   const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p=>p != null && p.id == user?.session_id), [room]);
-
+  const host = useMemo<RoomPlayer | undefined>(
+        ()=> Object.values(room.players).find(p => p && p.room_stats.Role == "host"), [room]);
   // Получение медиа (изображения/аудио) вопроса
   const getQuestionMedia = useCallback((question: Question) => {
     let questionParams;
@@ -81,13 +85,27 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   useEffect(()=>{
     return subscribe("answer/submit", (data) => {
       if(data.SessionID == currentPlayer?.id) return;
-      // TODO: 
-      // Запускаем новый таймер, ожидаем пока ХОСТ решит правильный-ли ответ
-      audioRef.current?.play();
-      answerTimer.resume();
       clearTimeout(userAnswerTimeout.current!);
     })
   }, [subscribe])
+
+  useEffect(()=>{
+    return subscribe("player/score", (data)=>{
+      let text;
+      if(data.score < 0){
+        text = `Неверно! (${data.score})`
+        audioRef.current?.play();
+        answerTimer.resume();
+      }else{
+        text = `Абсолютно верно! (+${data.score})`
+        setTimeout(()=>{
+          handleCloseQuestion();
+        }, 5000)
+      }
+      showTimedPopper(host!.id, text);
+      
+    })
+  }, [subscribe, dispatch])
 
   // Получение текста вопроса
   const getQuestionText = (question: Question) => {
@@ -120,16 +138,17 @@ export const QuestionDialog: React.FC<Props> = (props) => {
       // Если игрок ничего не отвечает за таймаут, отправляем пустой ответ
       setAnswer("")
       sendMessage("answer/submit", {answer: ""});
-      answerTimer.resume();
       setShowAnswerDialog(false);
+      //audioRef.current?.play();
+      //answerTimer.resume();
     }, player_answer_duration * 1000);
   }
 
   const handleAnswerSubmit = () => {
     sendMessage("answer/submit", {answer});
     setShowAnswerDialog(false);
-    audioRef.current?.play();
-    answerTimer.resume();
+    //audioRef.current?.play();
+    //answerTimer.resume();
     clearTimeout(userAnswerTimeout.current!);
   }
 

@@ -1,7 +1,7 @@
 import { Avatar, Box, Button, Paper, Popper, Typography, useTheme } from "@mui/material"
 import { useDispatch, useSelector } from "react-redux";
-import { $room, setPlayerPopper, setRoomData } from "~/store/room";
-import { type RoomDetails, type RoomPlayer } from "./types";
+import { $room, setRoomData } from "~/store/room";
+import { type RoomPlayer } from "./types";
 import React, { createRef, useEffect, useMemo, useRef, useState } from "react";
 import { $currentUser } from "~/store/user";
 import http from "~/utils/axios";
@@ -10,6 +10,7 @@ import { useWebSocketMessages } from "~/hooks/websocketHook";
 import AnimatedBox from "./QuestioDialog/components/AnimatedBox";
 import { player_answer_duration } from "./consts";
 import { CustomPopper } from "./CustomPopper";
+import { useTimedPopper } from "~/hooks/timedPopper";
 
 export const Players: React.FC = () => {
     
@@ -18,7 +19,7 @@ export const Players: React.FC = () => {
 
   const user = useSelector($currentUser);
   const room = useSelector($room);
-
+  const showTimedPopper = useTimedPopper();
   const { subscribe } = useWebSocketMessages();
 
   const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p => p && p.id == user?.session_id), [room]);
@@ -38,11 +39,8 @@ export const Players: React.FC = () => {
 
   useEffect(()=>{
     return subscribe("answer/submit", (data) => {
-      dispatch(setPlayerPopper({ id: data.SessionID, popperText: data.answer == "" ? "Не знаю" : data.answer}))
+      showTimedPopper(data.SessionID, data.answer == "" ? "Не знаю" : data.answer)
       setAnsweringPlayerID("");
-      setTimeout(()=>{
-        dispatch(setPlayerPopper({id: data.SessionID, popperText: null}))
-      }, 5000);
     })
   }, [subscribe])
 
