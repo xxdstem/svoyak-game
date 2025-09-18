@@ -1,13 +1,16 @@
 import { Avatar, Box, Button, Divider, Paper, Popper, Typography, useTheme } from "@mui/material"
 import type { RoomPlayer } from "./types"
-import { useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { $currentUser, leaveRoom } from "~/store/user"
 import { useNavigate } from "react-router"
 import http from "~/utils/axios"
-import { $room, setRoomData } from "~/store/room"
+import { $room, setPlayerPopper, setRoomData } from "~/store/room"
 import { StatusBar } from "./StatusBar"
 import { CustomPopper } from "./CustomPopper"
+import { useWebSocketMessages } from "~/hooks/websocketHook"
+import { useTimedPopper } from "~/hooks/timedPopper"
+import { default_delay } from "./consts"
 
 export const HostBar: React.FC = () => {
     
@@ -15,6 +18,8 @@ export const HostBar: React.FC = () => {
     const navigate = useNavigate();
     const theme = useTheme();
 
+    const {subscribe} = useWebSocketMessages();
+    const showTimedPopper = useTimedPopper();
     const room = useSelector($room);
     const user = useSelector($currentUser);
 
@@ -27,6 +32,24 @@ export const HostBar: React.FC = () => {
     const readyToStart = useMemo<boolean>(()=> Object.values(room.players).filter(p => p && p.room_stats.Role == "player").length > 0, [room])
 
     const hostRef = useRef(null);
+
+
+    useEffect(()=>{
+      return subscribe("player/score", (data)=>{
+        let text;
+        if(data.score < 0){
+          text = `Неверно! (${data.score})`
+        
+        }else{
+          text = `Абсолютно верно! (+${data.score})`
+          
+        }
+        showTimedPopper(host!.id, text);
+        setTimeout(()=>{
+          dispatch(setPlayerPopper({id: data.playerId, popperText: null}))
+        }, default_delay * 1000)
+      })
+    }, [subscribe, dispatch])
 
     const handleAbortGame = async () =>{
       if(window.confirm("Вы уверены?")){

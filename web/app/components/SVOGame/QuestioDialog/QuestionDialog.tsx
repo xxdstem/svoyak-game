@@ -44,8 +44,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   }, question_duration * 1000)
 
   const currentPlayer = useMemo<RoomPlayer | undefined>(()=>Object.values(room.players).find(p=>p != null && p.id == user?.session_id), [room]);
-  const host = useMemo<RoomPlayer | undefined>(
-        ()=> Object.values(room.players).find(p => p && p.room_stats.Role == "host"), [room]);
+  
   // Получение медиа (изображения/аудио) вопроса
   const getQuestionMedia = useCallback((question: Question) => {
     let questionParams;
@@ -91,18 +90,15 @@ export const QuestionDialog: React.FC<Props> = (props) => {
 
   useEffect(()=>{
     return subscribe("player/score", (data)=>{
-      let text;
       if(data.score < 0){
-        text = `Неверно! (${data.score})`
         audioRef.current?.play();
         answerTimer.resume();
       }else{
-        text = `Абсолютно верно! (+${data.score})`
+        setShowAnswer(true);
         setTimeout(()=>{
           handleCloseQuestion();
         }, 5000)
       }
-      showTimedPopper(host!.id, text);
       
     })
   }, [subscribe, dispatch])
@@ -208,7 +204,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
         </Typography>
       </Box>
     </DialogTitle>
-    <AnimatedBox duration={question_duration} show={!delaying} isPaused={answerTimer.isPaused}>
+    <AnimatedBox duration={question_duration} show={!delaying && !(showAnswer && answerTimer.isPaused)} isPaused={answerTimer.isPaused}>
       <Box sx={{ display: 'flex', p: 3, height:"100%", width:"100%", alignItems:"center", overflow: "hidden",   
         flexDirection:"column"}}>
         {(questionText || !media) && (

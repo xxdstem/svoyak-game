@@ -1,6 +1,6 @@
 import { Avatar, Box, Button, Paper, Popper, Typography, useTheme } from "@mui/material"
 import { useDispatch, useSelector } from "react-redux";
-import { $room, setRoomData } from "~/store/room";
+import { $room, setPlayerPopper, setRoomData } from "~/store/room";
 import { type RoomPlayer } from "./types";
 import React, { createRef, useEffect, useMemo, useRef, useState } from "react";
 import { $currentUser } from "~/store/user";
@@ -39,7 +39,7 @@ export const Players: React.FC = () => {
 
   useEffect(()=>{
     return subscribe("answer/submit", (data) => {
-      showTimedPopper(data.SessionID, data.answer == "" ? "Не знаю" : data.answer)
+      dispatch(setPlayerPopper({id: data.SessionID, popperText: data.answer == "" ? "Не знаю" : data.answer}))
       setAnsweringPlayerID("");
     })
   }, [subscribe])
