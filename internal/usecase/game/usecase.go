@@ -77,13 +77,6 @@ func (uc *uc) StartGame(room *entity.Room) error {
 func (uc *uc) SelectQustion(room *entity.Room, themeIdx int, questionIdx int) {
 	currentRound := room.Package.Rounds[room.CurrentRound]
 	currentRound.Themes[themeIdx].Questions[questionIdx].IsAnswered = true
-}
-
-func (uc *uc) ChangePlayerScore(player *entity.User, score int) {
-	player.RoomStats.Points += score
-	room := player.Room
-	// Провряем был-ли это последний вопрос и переключаем раунд
-	currentRound := room.Package.Rounds[room.CurrentRound]
 	isLatestQuestion := true
 	for _, theme := range currentRound.Themes {
 		for _, question := range theme.Questions {
@@ -99,6 +92,11 @@ func (uc *uc) ChangePlayerScore(player *entity.User, score int) {
 	if isLatestQuestion && room.CurrentRound < len(room.Package.Rounds)-1 {
 		room.CurrentRound += 1
 	}
+}
+
+func (uc *uc) ChangePlayerScore(player *entity.User, score int) {
+	player.RoomStats.Points += score
+	room := player.Room
 	room.Broadcast(websocket.Message{
 		Type:    "updated_room",
 		Payload: dto.RoomDetailedResponse(room),
