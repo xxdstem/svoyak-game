@@ -75,7 +75,7 @@ export const Players: React.FC = () => {
             return (
               <Paper key={slot} onClick={()=>joinAsUser(parseInt(slot))}
                 elevation={3} sx={{ 
-                padding: 2,
+                padding: '22px',
                 minWidth: 150,
                 backgroundColor: theme.palette.background.default,
                 color: "#fff",
