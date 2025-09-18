@@ -117,7 +117,8 @@ func RoomCreationResponse(room *entity.Room) roomCreationResponse {
 }
 
 type CreateGameRequest struct {
-	Name     string
-	Password string
-	File     multipart.File
+	Name         string
+	Password     string
+	PlayersCount int
+	File         multipart.File
 }

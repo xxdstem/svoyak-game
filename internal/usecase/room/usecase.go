@@ -56,7 +56,7 @@ func (uc *uc) CreateGame(req *dto.CreateGameRequest) (*entity.Room, error) {
 		return nil, fmt.Errorf("failed to process package: %w", err)
 	}
 
-	room, err := uc.CreateRoom(req.Name, req.Password)
+	room, err := uc.CreateRoom(req.Name, req.Password, req.PlayersCount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create room: %w", err)
 	}
@@ -76,8 +76,8 @@ func (uc *uc) saveAndProcessPackage(file multipart.File) (*models.Package, error
 	return uc.gameUsecase.UnpackAndLoadPackage(tempPath)
 }
 
-func (uc *uc) CreateRoom(name string, password string) (*entity.Room, error) {
-	room := entity.NewRoom(name, password)
+func (uc *uc) CreateRoom(name string, password string, playersCount int) (*entity.Room, error) {
+	room := entity.NewRoom(name, password, playersCount)
 	uc.rooms[room.ID] = &room
 	return &room, nil
 }

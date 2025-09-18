@@ -196,11 +196,16 @@ func (h *handler) CreateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
-
+	playersCount, err := strconv.Atoi(r.FormValue("players_max"))
+	if err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
 	req := &dto.CreateGameRequest{
-		Name:     r.FormValue("name"),
-		Password: r.FormValue("password"),
-		File:     file,
+		Name:         r.FormValue("name"),
+		Password:     r.FormValue("password"),
+		PlayersCount: playersCount,
+		File:         file,
 	}
 
 	room, err := h.ruc.CreateGame(req)

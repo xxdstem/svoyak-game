@@ -22,15 +22,14 @@ type Room struct {
 	IsStarted bool
 }
 
-func NewRoom(name string, password string) Room {
+func NewRoom(name string, password string, playersCount int) Room {
 	id := uuid.New().String()
-	players := 4
 	return Room{
 		ID:         id,
 		Name:       name,
 		Password:   password,
-		PlayersMax: players,
-		Players:    make(map[int]*User, players+1),
+		PlayersMax: playersCount,
+		Players:    make(map[int]*User, playersCount+1),
 		Members:    make(map[string]*User),
 	}
 }
