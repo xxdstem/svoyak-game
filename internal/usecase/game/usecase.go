@@ -81,8 +81,26 @@ func (uc *uc) SelectQustion(room *entity.Room, themeIdx int, questionIdx int) {
 
 func (uc *uc) ChangePlayerScore(player *entity.User, score int) {
 	player.RoomStats.Points += score
-	player.Room.Broadcast(websocket.Message{
+	room := player.Room
+	// Провряем был-ли это последний вопрос и переключаем раунд
+	currentRound := room.Package.Rounds[room.CurrentRound]
+	isLatestQuestion := true
+	for _, theme := range currentRound.Themes {
+		for _, question := range theme.Questions {
+			if !question.IsAnswered {
+				isLatestQuestion = false
+				break
+			}
+		}
+		if !isLatestQuestion {
+			break
+		}
+	}
+	if isLatestQuestion && room.CurrentRound < len(room.Package.Rounds)-1 {
+		room.CurrentRound += 1
+	}
+	room.Broadcast(websocket.Message{
 		Type:    "updated_room",
-		Payload: dto.RoomDetailedResponse(player.Room),
+		Payload: dto.RoomDetailedResponse(room),
 	})
 }
