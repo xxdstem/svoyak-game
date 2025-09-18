@@ -9,6 +9,7 @@ export const StatusBar: React.FC = () => {
   const { subscribe } = useWebSocketMessages();
   const [logs, setLogs] = useState<string[]>([]);
   const logsRef = useRef<string[]>([]);
+  const listRef = useRef<HTMLUListElement>(null);
 
   // Получить имя пользователя по sessionID
   const findUserById = (sessionID: string) => {
@@ -38,15 +39,21 @@ export const StatusBar: React.FC = () => {
     const unsubscribes = types.map(type =>
       subscribe(type, (data: any) => {
         const logText = getLogText(type, data);
-        logsRef.current = [...logsRef.current.slice(-5), logText];
+        logsRef.current = [...logsRef.current, logText];
         setLogs([...logsRef.current]);
       })
     );
     return () => { unsubscribes.forEach(unsub => unsub()); };
   }, [subscribe, room]);
 
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
+  }, [logs]);
+
   return (
-    <List sx={{ fontSize: '10px', width: '100%' }}>
+    <List ref={listRef} sx={{ fontSize: '10px', width: '100%', maxHeight: '100%', overflowY: 'auto' }}>
       <Stack spacing={1}>
         {logs.map((log, idx) => (
           <ListItem key={idx} sx={{ width: '100%', p: 1, background: theme.palette.background.paper }}>
