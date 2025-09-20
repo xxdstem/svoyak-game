@@ -147,6 +147,7 @@ export const HostBar: React.FC = () => {
           </Typography>
           {room.is_started ? <Button 
             fullWidth
+            size="small"
             variant="contained" 
             color="primary" 
             onClick={pauseUnpause}
@@ -157,6 +158,7 @@ export const HostBar: React.FC = () => {
             fullWidth
             variant="contained" 
             color="success" 
+            size="small"
             disabled={!readyToStart}
             onClick={startGame}
             sx={{ marginBottom: 2 }}
@@ -166,6 +168,7 @@ export const HostBar: React.FC = () => {
           
           <Button 
             fullWidth
+            size="small"
             variant="contained" 
             color="primary" 
         
@@ -177,7 +180,8 @@ export const HostBar: React.FC = () => {
       </>)}
       
       <Button 
-        variant="contained" 
+        variant="contained"
+        size="small" 
         color="error" 
         fullWidth
         onClick={() => handleAbortGame()}

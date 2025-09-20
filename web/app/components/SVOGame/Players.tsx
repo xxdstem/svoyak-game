@@ -108,7 +108,7 @@ export const Players: React.FC = () => {
           return (<React.Fragment key={slot}>
             <AnimatedBox  duration={player_answer_duration} color="yellow" show={answeringPlayerID == player.id}>
               <Paper elevation={1} ref={paperRef} sx={{ 
-                padding: 2,
+                padding: {xs: 1, md: 2},
                 minWidth: 150,
                 border: !player.ws_connected ? "2px solid red" : "",
                 opacity: !player.ws_connected ? 0.5 : 1,
@@ -130,7 +130,7 @@ export const Players: React.FC = () => {
                     </Typography>
                   </Box>
                 </Box>
-                <Typography variant="h4" align="center" sx={{ marginTop: 1 }}>
+                <Typography variant="h3" align="center" sx={{ marginTop: 1 }}>
                   {player.room_stats.Points} 
                 </Typography>
               </Paper>

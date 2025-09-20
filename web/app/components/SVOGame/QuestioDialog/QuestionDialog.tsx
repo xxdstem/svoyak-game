@@ -156,6 +156,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
 
   const hostButtons = <>
     <Button
+      fullWidth
       onClick={()=>setShowAnswer(true)} 
       color="primary" 
       variant="contained"
@@ -163,6 +164,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
       Показать ответ
     </Button>
     <Button
+      fullWidth
       color="warning" 
       variant="contained"
     >
@@ -239,7 +241,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     <DialogActions sx={{ 
       mt: 2,
       justifyContent: 'space-between', 
-      padding: 0,
+      padding: {xs: 2, lg: 0},
       backgroundColor: theme.palette.background.default,
     }}>
       {showAnswer ? <Typography style={{margin: "auto"}} variant="h1">

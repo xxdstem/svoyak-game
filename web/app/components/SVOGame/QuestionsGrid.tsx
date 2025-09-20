@@ -15,7 +15,7 @@ export const QuestionsGrid: React.FC<QuestionsGridProps> = ({ themes, availableQ
         <Card sx={{
           backgroundColor: 'primary.light',
           color: 'text.primary',
-          minWidth: '200px',
+          minWidth: { xs: '140px', md: '180px', lg: '200px' },
           width: '100%',
           minHeight: '60px',
           display: 'flex',
@@ -23,14 +23,13 @@ export const QuestionsGrid: React.FC<QuestionsGridProps> = ({ themes, availableQ
           justifyContent: 'center',
           height: '100%',
           wordBreak: 'break-word',
+          padding: "0 8px",
         }}>
-          <CardContent>
-            <Typography variant="h6" align="center" mt={1}>
+            <Typography variant="h6" align="center">
               {gameTheme.Name}
             </Typography>
-          </CardContent>
         </Card>
-        <Box sx={{ display: 'flex', gap: 1, width: '100%', height: '100%' }}>
+        <Box sx={{ display: 'flex', gap: 1, height: '100%' }}>
           {gameTheme.Questions
             .sort((a, b) => a.Price - b.Price)
             .map((question, questionIndex) => (
@@ -52,8 +51,8 @@ export const QuestionsGrid: React.FC<QuestionsGridProps> = ({ themes, availableQ
                 }}
               >
                 <CardContent>
-                  <Typography variant="h5" mt={1} align="center">
-                    {question.IsAnswered ? '' : question.Price}
+                  <Typography visibility={question.IsAnswered ? "hidden" : "visible"} variant="h5" mt={1} align="center">
+                    {question.Price}
                   </Typography>
                 </CardContent>
               </Card>

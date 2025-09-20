@@ -1,4 +1,4 @@
-import { Box, Popper, Typography, useTheme } from "@mui/material"
+import { Box, Popper, Typography, useTheme, useMediaQuery } from "@mui/material"
 
 type Props = {
   text?: string;
@@ -9,6 +9,7 @@ type Props = {
 export const CustomPopper : React.FC<Props> = (props) => {
   const {text, anchorEl, placement = "right"} = props;
   const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
   // Стили стрелки для right
   const arrowRightSx = {
@@ -65,11 +66,16 @@ export const CustomPopper : React.FC<Props> = (props) => {
   };
 
   const arrowSx = placement === "right" ? arrowRightSx : arrowTopSx;
+  const isAnchorValid = anchorEl != null && anchorEl.offsetParent !== null;
+
+  // Определяем variant для Typography в зависимости от размера экрана
+  const textVariant = isMdUp ? "subtitle1" : "h4";
 
   return (
     <Popper
-      open={Boolean(text)}
+      open={Boolean(text) && isAnchorValid}
       anchorEl={anchorEl}
+      disablePortal={true}
       placement={placement}
       sx={{ zIndex: 10 }}
       modifiers={[{ name: 'arrow', enabled: true, options: { element: '[data-popper-arrow]' } }]}
@@ -81,15 +87,15 @@ export const CustomPopper : React.FC<Props> = (props) => {
         boxShadow: 3,
         marginLeft: placement === 'right' ? 1 : 0,
         marginBottom: placement === 'top' ? '12px' : 0,
-        borderRadius: 2,
-        px: 2,
-        py: 1.5,
+        borderRadius: 4,
+        px: {xs: 4, lg: 2},
+        py: {xs: 3, lg: 1.5},
         border: '2px solid',
         borderColor: 'primary.main',
         maxWidth: 200,
         opacity: 0.9
       }}>
-        <Typography variant="subtitle2">{text}</Typography>
+        <Typography variant={textVariant}>{text}</Typography>
         <Box data-popper-arrow sx={arrowSx} />
       </Box>
     </Popper>

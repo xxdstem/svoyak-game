@@ -53,7 +53,15 @@ export const StatusBar: React.FC = () => {
   }, [logs]);
 
   return (
-    <List ref={listRef} sx={{ fontSize: '10px', width: '100%', maxHeight: '100%', overflowY: 'auto' }}>
+    <List
+      ref={listRef}
+      sx={{
+        fontSize: '10px',
+        width: '100%',
+        maxHeight: '100%',
+        overflowY: 'auto',
+      }}
+    >
       <Stack spacing={1}>
         {logs.map((log, idx) => (
           <ListItem key={idx} sx={{ width: '100%', p: 1, background: theme.palette.background.paper }}>

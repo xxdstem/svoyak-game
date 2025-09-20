@@ -135,14 +135,14 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
     <Box sx={{ 
       height: 'calc(100vh - 206px)', 
       position: 'relative',
-      padding: 2, 
+      padding: {xs: 0, lg: 2}, 
       backgroundColor: theme.palette.background.default,
       color: theme.palette.text.primary,
     }}>
       {/* Основная сетка */}
       <Grid container spacing={2} sx={{ height: '100%'}}>
         {/* Колонка ведущего */}
-        <Grid height={'100%'} width={220} >
+        <Grid sx={{display: { xs: 'none', md: 'block' }, width: {md: '170px', lg: '220px'}}} height={'100%'} width={220} >
           <HostBar/>
         </Grid>
         
