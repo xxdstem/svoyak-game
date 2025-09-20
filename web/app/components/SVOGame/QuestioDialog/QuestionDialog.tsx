@@ -34,7 +34,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   const [answer, setAnswer] = useState("");
 
   const userAnswerTimeout = useRef<NodeJS.Timeout>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const mediaRef = useRef<HTMLVideoElement>(null);
   
   const answerTimer = useSyncedTimer(()=>{
     setShowAnswer(true);
@@ -56,7 +56,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
         if (!questionParams) return null;
     }
 
-    return questionParams.Items.find(item => ['image', 'audio'].includes(item.Type));
+    return questionParams.Items.find(item => ['image', 'audio', 'video'].includes(item.Type));
   },[showAnswer]);
 
   useEffect(()=>{
@@ -73,10 +73,10 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     return subscribe("answer/open", (data) => {
       if(data.SessionID == currentPlayer?.id) return;
       answerTimer.pause();
-      audioRef.current?.pause();
+      mediaRef.current?.pause();
       userAnswerTimeout.current = setTimeout(()=>{
         answerTimer.resume();
-        audioRef.current?.play();
+        mediaRef.current?.play();
       }, player_answer_duration * 1000);
     })
   }, [subscribe, answerTimer])
@@ -91,7 +91,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   useEffect(()=>{
     return subscribe("player/score", (data)=>{
       if(data.score < 0){
-        audioRef.current?.play();
+        mediaRef.current?.play();
         answerTimer.resume();
       }else{
         setShowAnswer(true);
@@ -110,7 +110,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
 
     // Ищем текстовый контент (не изображения/аудио)
     const textItems = questionParams.Items.filter(item =>
-        !['image', 'audio'].includes(item.Type) &&
+        !['image', 'audio', 'video'].includes(item.Type) &&
         item.Placement !== 'replic' &&
         item.Content.trim()
     );
@@ -126,7 +126,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   const handleShowAnswerDialog = () => {
     if(delaying || triedAnswer || answerTimer.isPaused) return;
     sendMessage("answer/open", {})
-    audioRef.current?.pause();
+    mediaRef.current?.pause();
     setTriedAnswer(true);
     setShowAnswerDialog(true);
     answerTimer.pause();
@@ -135,7 +135,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
       setAnswer("")
       sendMessage("answer/submit", {answer: ""});
       setShowAnswerDialog(false);
-      //audioRef.current?.play();
+      //mediaRef.current?.play();
       //answerTimer.resume();
     }, player_answer_duration * 1000);
   }
@@ -143,7 +143,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   const handleAnswerSubmit = () => {
     sendMessage("answer/submit", {answer});
     setShowAnswerDialog(false);
-    //audioRef.current?.play();
+    //mediaRef.current?.play();
     //answerTimer.resume();
     clearTimeout(userAnswerTimeout.current!);
   }
@@ -227,9 +227,20 @@ export const QuestionDialog: React.FC<Props> = (props) => {
               margin: '0 auto'}} 
             />
           )}
+
+          {media.Type === 'video' && (
+            <video ref={mediaRef} style={{ maxWidth: '100%',
+              maxHeight: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              display: 'block',
+              margin: '0 auto'}} autoPlay>
+              <source src={`http://localhost:8080/files/${room.package_id}/Video/${encodeURIComponent(encodeURIComponent(media.Content))}`}/>
+            </video>
+          )}
               
           {media.Type === 'audio' && (<>
-            <audio ref={audioRef} style={{visibility:"hidden"}} controls autoPlay>
+            <audio ref={mediaRef} style={{visibility:"hidden"}} controls autoPlay>
             <source src={`http://localhost:8080/files/${room.package_id}/Audio/${encodeURIComponent(encodeURIComponent(media.Content))}`} type="audio/mpeg" />
             Ваш браузер не поддерживает аудио элемент.
             </audio>
