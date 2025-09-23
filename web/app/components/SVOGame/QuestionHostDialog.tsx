@@ -41,9 +41,9 @@ export const QuestionHostDialog: React.FC<Props> = (props) => {
       <DialogTitle>Ваше решение</DialogTitle>
       <DialogContent>
         <Box textAlign={'center'}>
-          {findUserById(answer.SessionID)} ответил: {answer.answer == "" ? "Не знаю" : answer.answer}
-          <Divider sx={{my: 2}}/>
-          <Typography variant="subtitle2">Правильный ответ: {getAnswerText(question)}</Typography>
+          <Typography variant="body1">{findUserById(answer.SessionID)} ответил: {answer.answer == "" ? "Не знаю" : answer.answer}</Typography>
+          <Divider sx={{my: 1}}/>
+          <Typography variant="h6">Правильный ответ: {getAnswerText(question)}</Typography>
         </Box>
       </DialogContent>
       <DialogActions>

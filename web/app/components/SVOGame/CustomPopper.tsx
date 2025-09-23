@@ -69,7 +69,7 @@ export const CustomPopper : React.FC<Props> = (props) => {
   const isAnchorValid = anchorEl != null && anchorEl.offsetParent !== null;
 
   // Определяем variant для Typography в зависимости от размера экрана
-  const textVariant = isMdUp ? "subtitle1" : "h4";
+  const textVariant = isMdUp ? "body1" : "h4";
 
   return (
     <Popper
@@ -85,14 +85,14 @@ export const CustomPopper : React.FC<Props> = (props) => {
         bgcolor: 'background.paper',
         color: 'text.primary',
         boxShadow: 3,
-        marginLeft: placement === 'right' ? 1 : 0,
+        marginLeft: placement === 'right' ? '12px' : 0,
         marginBottom: placement === 'top' ? '12px' : 0,
         borderRadius: 4,
-        px: {xs: 4, lg: 2},
-        py: {xs: 3, lg: 1.5},
+        p: {xs: 4, lg: 2},
         border: '2px solid',
         borderColor: 'primary.main',
-        maxWidth: 200,
+        width: 200,
+        textAlign: "center",
         opacity: 0.9
       }}>
         <Typography variant={textVariant}>{text}</Typography>
