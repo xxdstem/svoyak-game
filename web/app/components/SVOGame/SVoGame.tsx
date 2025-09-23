@@ -67,10 +67,10 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
       if(themes.every(t => t.Questions.every(q => q.IsAnswered))){
         nextRound();
       }
-      const questionPicker = Object.values(room.players).find((p)=> p && p.room_stats.QuestionPicker);
+      const questionPicker = Object.values(room.players).find((p)=> p && p.room_stats.QuestionPicker)?.username || "Игрок";
       dispatch(setPlayerPopper({ 
         id: host!.id,
-        popperText: `Выбирайте вопрос, ${questionPicker?.username}!`
+        popperText: `Выбирайте вопрос, ${questionPicker}!`
       }))
     }, [themes]);
   
@@ -118,7 +118,14 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
       })
     },[subscribe, dispatch, host])
 
-    
+    useEffect(()=>{
+      if(!room.is_started) return;
+      const questionPicker = Object.values(room.players).find((p)=> p && p.room_stats.QuestionPicker)?.username || "Игрок";
+      dispatch(setPlayerPopper({ 
+        id: host!.id,
+        popperText: `Выбирайте вопрос, ${questionPicker}!`
+      }))
+    }, [room.is_started])
 
     const questionBox = (
       <>

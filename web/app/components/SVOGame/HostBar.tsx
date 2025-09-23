@@ -49,7 +49,7 @@ export const HostBar: React.FC = () => {
           dispatch(setPlayerPopper({id: data.playerId, popperText: null}))
         }, default_delay * 1000)
       })
-    }, [subscribe, dispatch])
+    }, [subscribe, dispatch, host])
 
     const handleAbortGame = async () =>{
       if(window.confirm("Вы уверены?")){

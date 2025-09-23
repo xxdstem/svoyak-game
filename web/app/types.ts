@@ -18,7 +18,7 @@ export type Room = {
 
 export type RootState = {
     user: User | null;
-    room: RoomDetails;
+    room: {data: RoomDetails};
 }
 
 export type WsMessage = {

@@ -1,22 +1,43 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { RoomDetails } from '~/components/SVOGame/types';
 import type { RootState } from '~/types';
 
 
 
-const initialState: RoomDetails | null = null;
+interface RoomState {
+  data: RoomDetails | null;
+}
+
+const initialState: RoomState = {
+  data: null
+};
 
 const roomSlice = createSlice({
   name: 'room',
   initialState,
   reducers: {
-    setRoomData(state, action) {
-      return action.payload
+    setRoomData(state, action: PayloadAction<RoomDetails | null>) {
+      const newRoom = action.payload;
+      
+      if (newRoom == null) {
+        state.data = null;
+        return;
+      }
+      
+      if (state.data && state.data.players && newRoom.players) {
+        Object.values(newRoom.players).forEach(player => {
+          const oldPlayer = Object.values(state.data!.players!).find(p => player && p && p.id === player.id);
+          if (oldPlayer) {
+            player.popperText = oldPlayer.popperText;
+          }
+        });
+      }
+      state.data = newRoom;
     },
-    setPlayerPopper(state: RoomDetails | null, action) {
+    setPlayerPopper(state: RoomState, action) {
       const { id, popperText } = action.payload;
-      if (!state || !state.players) return;
-      Object.values(state.players).forEach(player => {
+      if (!state.data || !state.data.players) return;
+      Object.values(state.data.players).forEach(player => {
         if (player && player.id === id) {
           player.popperText = popperText;
         }
@@ -26,6 +47,6 @@ const roomSlice = createSlice({
 });
 
 export const { setRoomData, setPlayerPopper } = roomSlice.actions;
-export const $room = (state: RootState) => state.room;
+export const $room = (state: RootState) => state.room.data;
 
 export default roomSlice.reducer;
