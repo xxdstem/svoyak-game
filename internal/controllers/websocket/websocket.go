@@ -15,6 +15,7 @@ type Store interface {
 
 type GameUseCase interface {
 	SelectQustion(room *entity.Room, themeIdx int, questionIdx int)
+	SetPlayerQuestionPicker(player *entity.User)
 	ChangePlayerScore(player *entity.User, score int)
 }
 
@@ -111,5 +112,9 @@ func (h *WSHandler) PlayerScore(client *websocket.Client, message websocket.Mess
 		return
 	}
 	h.guc.ChangePlayerScore(player, score)
+	// Нужно сделать отдельный метод который будет отвечать за результат вопроса
+	if score > 0 {
+		h.guc.SetPlayerQuestionPicker(player)
+	}
 	user.Room.Broadcast(message)
 }

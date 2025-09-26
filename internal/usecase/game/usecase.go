@@ -102,3 +102,10 @@ func (uc *uc) ChangePlayerScore(player *entity.User, score int) {
 		Payload: dto.RoomDetailedResponse(room),
 	})
 }
+
+func (uc *uc) SetPlayerQuestionPicker(player *entity.User) {
+	for _, u := range player.Room.Players {
+		u.RoomStats.QuestionPicker = false
+	}
+	player.RoomStats.QuestionPicker = true
+}
