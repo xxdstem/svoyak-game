@@ -87,6 +87,8 @@ func (uc *uc) NewUser(sessionID string, name string) (*entity.User, error) {
 	user := uc.store.FindByName(name)
 	if user != nil {
 		if user.RoomStats != nil && user.Ws == nil {
+			uc.store.Del(user.SessionID)
+			uc.store.Set(sessionID, user)
 			return user, nil
 		}
 		return nil, errors.New("this name is already taken")
