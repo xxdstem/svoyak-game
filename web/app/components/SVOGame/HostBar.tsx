@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, Divider, Paper, Popper, Typography, useTheme } from "@mui/material"
+import { Avatar, Box, Button, Chip, Divider, Paper, Popper, Typography, useTheme } from "@mui/material"
 import type { RoomPlayer } from "./types"
 import { useEffect, useMemo, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
@@ -88,39 +88,45 @@ export const HostBar: React.FC = () => {
       }
     }
 
-    return <Paper elevation={3} sx={{ 
-      height: '100%', 
-      padding: 2,
-      backgroundColor: theme.palette.background.paper,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-    }}>
-      {host ?
-        <Box textAlign={"center"} sx={{
-          padding: 1,
+    const hostCard = <Box textAlign={"center"} sx={{
+          paddingX: 2,
+          minWidth: '180px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          width: '100%',
-          border: !host.ws_connected ? "2px solid red" : "",
+          border: !host!.ws_connected ? "2px solid red" : "",
           }}>
+            <Typography variant="subtitle1">Ведущий</Typography>
           <Avatar ref={hostRef} sx={{ 
-            width: 80, 
-            opacity: !host.ws_connected ? 0.5 : 1,
-            height: 80, 
-            bgcolor: host.color, 
-            fontSize: '2rem',
-            marginBottom: 2,
+            width: {xs: 52, md: 80}, 
+            opacity: !host!.ws_connected ? 0.5 : 1,
+            height: {xs: 52, md: 80}, 
+            bgcolor: host!.color, 
+            fontSize: '1.5rem',
+            marginY: 2,
           }}>
             ?
           </Avatar>
           <Typography variant="h6" gutterBottom>
-            {host.username}
+            {host!.username}
           </Typography>
           
-          <CustomPopper anchorEl={hostRef.current} text={host.popperText}/>
-        </Box>
+          <CustomPopper anchorEl={hostRef.current} text={host!.popperText}/>
+        </Box>;
+
+    return <Paper elevation={3} sx={{ 
+      position: {xs: 'fixed', md: 'relative'},
+      height: {xs: 'auto', md: '100%'}, 
+      width: '100%',
+      padding: 1,
+      backgroundColor: theme.palette.background.paper,
+      display: 'flex',
+      flexDirection: {xs: 'row', md: 'column'},
+      alignItems: 'center',
+      zIndex: 40,
+    }}>
+      {host ?
+        hostCard
         : !currentPlayer ? 
         <Paper key={-1} onClick={joinAsHost}
           elevation={3} sx={{ 
@@ -146,58 +152,55 @@ export const HostBar: React.FC = () => {
             </Box>
           </Box>
         </Paper>
-      : <>waiting for host lol</>}
-      
-      <Divider sx={{ width: '100%', marginY: 2 }} />
-      {currentPlayer?.room_stats.Role == "host" && (<>
-          <Typography variant="subtitle1" gutterBottom>
-            Управление игрой
-          </Typography>
-          {room.is_started ? <Button 
-            fullWidth
-            size="small"
-            variant="contained" 
-            color="primary" 
-            onClick={pauseUnpause}
-            sx={{ marginBottom: 2 }}
-          >
-            {room.is_paused ? "Продолжить" : "Пауза"}
-          </Button> : <Button 
-            fullWidth
-            variant="contained" 
-            color="success" 
-            size="small"
-            disabled={!readyToStart}
-            onClick={startGame}
-            sx={{ marginBottom: 2 }}
-          >
-            Начать игру
-          </Button>}
-          
-          <Button 
-            fullWidth
-            size="small"
-            variant="contained" 
-            color="primary" 
+      : <>Ожидаем хоста</>}
+        {currentPlayer?.room_stats.Role == "host" && (<Box display={{xs: 'none', md: 'block'}} width={'100%'}>
+          <Divider orientation="horizontal" sx={{ width: '100%', marginY: 2 }}>
+            <Chip label="Управление игрой" size="small" /></Divider>
+              {room.is_started ? <Button 
+                fullWidth
+                size="small"
+                variant="contained" 
+                color="primary" 
+                onClick={pauseUnpause}
+                sx={{ marginBottom: 2 }}
+              >
+                {room.is_paused ? "Продолжить" : "Пауза"}
+              </Button> : <Button 
+                fullWidth
+                variant="contained" 
+                color="success" 
+                size="small"
+                disabled={!readyToStart}
+                onClick={startGame}
+                sx={{ marginBottom: 2 }}
+              >
+                Начать игру
+              </Button>}
+              
+              <Button 
+                fullWidth
+                size="small"
+                variant="contained" 
+                color="primary" 
+              >
+                Изменить очки
+              </Button>
+        </Box>)}
         
-            sx={{ marginBottom: 2 }}
-          >
-            Изменить очки
-          </Button>
-        <Divider sx={{ width: '100%', mb: 2 }} />
-      </>)}
-      
-      <Button 
-        variant="contained"
-        size="small" 
-        color="error" 
-        fullWidth
-        onClick={() => handleAbortGame()}
-        sx={{ marginBottom: 2 }}
-      >
-        Покинуть игру
-      </Button>
-      <Divider  sx={{ width: '100%', mb: 2 }}/>
-      <StatusBar/>
+        <Button 
+          variant="contained"
+          size="small" 
+          color="error" 
+          fullWidth
+          onClick={() => handleAbortGame()}
+          sx={{ marginY: 2 }}
+        >
+          Покинуть игру
+        </Button>
+      <Box sx={{display: {xs: "none", md: "block"}, width: '100%'}}>
+        <Divider sx={{marginY: 1}} orientation="horizontal" flexItem >
+          <Chip label="Логи" size="small" /></Divider>
+        <StatusBar/>
+      </Box>
     </Paper>
 }

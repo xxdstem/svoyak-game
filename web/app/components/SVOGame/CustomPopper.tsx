@@ -9,7 +9,6 @@ type Props = {
 export const CustomPopper : React.FC<Props> = (props) => {
   const {text, anchorEl, placement = "right"} = props;
   const theme = useTheme();
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
   // Стили стрелки для right
   const arrowRightSx = {
@@ -68,8 +67,6 @@ export const CustomPopper : React.FC<Props> = (props) => {
   const arrowSx = placement === "right" ? arrowRightSx : arrowTopSx;
   const isAnchorValid = anchorEl != null && anchorEl.offsetParent !== null;
 
-  // Определяем variant для Typography в зависимости от размера экрана
-  const textVariant = isMdUp ? "body1" : "h4";
 
   return (
     <Popper
@@ -88,14 +85,14 @@ export const CustomPopper : React.FC<Props> = (props) => {
         marginLeft: placement === 'right' ? '12px' : 0,
         marginBottom: placement === 'top' ? '12px' : 0,
         borderRadius: 4,
-        p: {xs: 4, lg: 2},
+        p: {xs: 3, lg: 2},
         border: '2px solid',
         borderColor: 'primary.main',
         width: 200,
         textAlign: "center",
         opacity: 0.9
       }}>
-        <Typography variant={textVariant}>{text}</Typography>
+        <Typography variant={'body1'}>{text}</Typography>
         <Box data-popper-arrow sx={arrowSx} />
       </Box>
     </Popper>

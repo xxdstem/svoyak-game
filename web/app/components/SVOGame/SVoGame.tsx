@@ -129,12 +129,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
 
     const questionBox = (
       <>
-        <RoundHeader currentRound={currentRound} gameData={gameData} />
-        <QuestionsGrid
-          themes={themes}
-          availableQuestion={availableQuestion}
-          handleQuestionClick={handleQuestionClick}
-        />
+        
       </>
     );
 
@@ -149,12 +144,12 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
       {/* Основная сетка */}
       <Grid container spacing={2} sx={{ height: '100%'}}>
         {/* Колонка ведущего */}
-        <Grid sx={{display: { xs: 'none', md: 'block' }, width: {md: '170px', lg: '220px'}}} height={'100%'} width={220} >
+        <Grid sx={{width: {xs: '100%', md: '220px'}}} >
           <HostBar/>
         </Grid>
         
         {/* Центральная колонка с вопросами */}
-        <Grid  sx={{ flexGrow: 1, flex: "1 0 auto", height: "100%", width: 0 }} >
+        <Grid  sx={{ flexGrow: 1, flex: "1 0 auto", marginTop: {xs: '130px', md: 0}, height: "100%", width: 0 }} >
           <Box sx={{ 
             height: '100%', 
             position: "relative",
@@ -166,7 +161,12 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
             :(<>
               {currentQuestion 
               ?  <QuestionDialog themes={themes} handleCloseQuestion={handleCloseQuestion} currentQuestion={currentQuestion} />
-              : questionBox}
+              : <><RoundHeader currentRound={currentRound} gameData={gameData} />
+                <QuestionsGrid
+                  themes={themes}
+                  availableQuestion={availableQuestion}
+                  handleQuestionClick={handleQuestionClick}
+                /></>}
             </>
             )}
           </Box>

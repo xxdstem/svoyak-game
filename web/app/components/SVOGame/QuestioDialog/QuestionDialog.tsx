@@ -198,7 +198,12 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     </Dialog>
   )
   
-  return (<>
+  return (<Box sx={{ height: {xs: 'calc(100% - 110px)', md: '100%'}, 
+            position: "relative",
+            display: 'flex',
+            paddingTop: 2,
+            width: "100%",
+            flexDirection: 'column',}}>
     <DialogTitle mb={1} sx={{backgroundColor: theme.palette.background.paper}}>
       <Box>
         <Typography variant="h2" align="center">
@@ -270,6 +275,6 @@ export const QuestionDialog: React.FC<Props> = (props) => {
       )}
     </DialogActions>
     {answerDialog}
-    </>
+    </Box>
   );
 }

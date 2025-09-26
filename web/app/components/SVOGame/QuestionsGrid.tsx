@@ -9,7 +9,7 @@ interface QuestionsGridProps {
 }
 
 export const QuestionsGrid: React.FC<QuestionsGridProps> = ({ themes, availableQuestion, handleQuestionClick }) => (
-  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%', overflow: 'auto' }}>
+  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%', marginBottom: {xs: '115px', md: 0}, overflow: 'auto' }}>
     {themes.map((gameTheme, themeIndex) => (
       <Box key={themeIndex} sx={{ display: 'grid', gridTemplateColumns: '1fr 5fr', alignItems: 'stretch', gap: 2, width: '100%' }}>
         <Card sx={{
@@ -41,6 +41,7 @@ export const QuestionsGrid: React.FC<QuestionsGridProps> = ({ themes, availableQ
                   backgroundColor: availableQuestion(question) ? 'primary.dark' : 'grey.100',
                   color: 'text.primary',
                   flex: 1,
+                  minWidth: { xs: '100px', md: '140px', lg: '180px' },
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
