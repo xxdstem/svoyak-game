@@ -124,31 +124,32 @@ export const QuestionDialog: React.FC<Props> = (props) => {
     return question.Right.Answers.join(' или ');
   };
 
-  const handleShowAnswerDialog = () => {
+  const debounceButton = () => {
     if(isDebouncing) return;
     setDebouncing(true);
     setTimeout(()=>setDebouncing(false), question_debounce_duration * 1000);
-    if(delaying || triedAnswer || answerTimer.isPaused) return;
+    return;
+  }
+
+  const submitAnswer = (answerString: string) =>{
+    setAnswer(answerString)
+    sendMessage("answer/submit", {'answer': answerString});
+    setShowAnswerDialog(false); 
+  }
+
+  const handleAnswerButton = () => {
+    if(delaying) return debounceButton()
+    if(isButtonDisabled) return;
     sendMessage("answer/open", {})
     mediaRef.current?.pause();
+    answerTimer.pause();
     setTriedAnswer(true);
     setShowAnswerDialog(true);
-    answerTimer.pause();
-    userAnswerTimeout.current = setTimeout(()=>{
-      // Если игрок ничего не отвечает за таймаут, отправляем пустой ответ
-      setAnswer("")
-      sendMessage("answer/submit", {answer: ""});
-      setShowAnswerDialog(false);
-      //mediaRef.current?.play();
-      //answerTimer.resume();
-    }, player_answer_duration * 1000);
+    userAnswerTimeout.current = setTimeout(()=>submitAnswer(""), player_answer_duration * 1000);
   }
 
   const handleAnswerSubmit = () => {
-    sendMessage("answer/submit", {answer});
-    setShowAnswerDialog(false);
-    //mediaRef.current?.play();
-    //answerTimer.resume();
+    submitAnswer(answer)
     clearTimeout(userAnswerTimeout.current!);
   }
 
@@ -271,7 +272,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
       : (<>
         {currentPlayer?.room_stats.Role == "host" ? hostButtons : <Button
           fullWidth
-          onClick={handleShowAnswerDialog}
+          onClick={handleAnswerButton}
           disabled={isButtonDisabled}
           color="success" 
           variant="contained"
