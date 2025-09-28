@@ -8,7 +8,7 @@ import MusicIcon from "./components/MusicIcon";
 import AnimatedBox from "./components/AnimatedBox";
 import { useSyncedTimer } from "./components/SyncedTimer";
 import { useWebSocketMessages } from "~/hooks/websocketHook";
-import { default_delay, player_answer_duration, question_duration } from "../consts";
+import { default_delay, player_answer_duration, question_debounce_duration, question_duration } from "../consts";
 import { useTimedPopper } from "../../../hooks/timedPopper";
 
 type Props = {
@@ -30,6 +30,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   const [delaying, setDelaying] = useState(true);
   const [showAnswer, setShowAnswer] = useState(false);
   const [triedAnswer, setTriedAnswer] = useState(false);
+  const [isDebouncing, setDebouncing] = useState(false);
   const [showAnswerDialog, setShowAnswerDialog] = useState(false);
   const [answer, setAnswer] = useState("");
 
@@ -124,6 +125,9 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   };
 
   const handleShowAnswerDialog = () => {
+    if(isDebouncing) return;
+    setDebouncing(true);
+    setTimeout(()=>setDebouncing(false), question_debounce_duration * 1000);
     if(delaying || triedAnswer || answerTimer.isPaused) return;
     sendMessage("answer/open", {})
     mediaRef.current?.pause();
@@ -153,6 +157,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
   const questionText = getQuestionText(question);
   const answerText = getAnswerText(question);
   const media =  getQuestionMedia(question);
+  const isButtonDisabled = triedAnswer || (answerTimer.isPaused && !delaying) || isDebouncing;
 
   const hostButtons = <>
     <Button
@@ -267,7 +272,7 @@ export const QuestionDialog: React.FC<Props> = (props) => {
         {currentPlayer?.room_stats.Role == "host" ? hostButtons : <Button
           fullWidth
           onClick={handleShowAnswerDialog}
-          disabled={delaying || triedAnswer || answerTimer.isPaused}
+          disabled={isButtonDisabled}
           color="success" 
           variant="contained"
           >ОТВЕТИТЬ
