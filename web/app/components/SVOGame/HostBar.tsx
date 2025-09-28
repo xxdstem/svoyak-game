@@ -197,7 +197,7 @@ export const HostBar: React.FC = () => {
         >
           Покинуть игру
         </Button>
-      <Box sx={{display: {xs: "none", md: "block"}, width: '100%'}}>
+      <Box sx={{display: {xs: "none", md: "flex"}, flexDirection: 'column', minHeight: 0, height: '100%', position: 'relative', width: '100%'}}>
         <Divider sx={{marginY: 1}} orientation="horizontal" flexItem >
           <Chip label="Логи" size="small" /></Divider>
         <StatusBar/>

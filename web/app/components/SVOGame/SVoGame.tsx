@@ -144,7 +144,7 @@ export const Game: React.FC<{pkg: Package}> = (state) => {
       {/* Основная сетка */}
       <Grid container spacing={2} sx={{ height: '100%'}}>
         {/* Колонка ведущего */}
-        <Grid sx={{width: {xs: '100%', md: '220px'}}} >
+        <Grid sx={{width: {xs: '100%', md: '220px'}, height: {xs: 'auto', md: '100%'}}} >
           <HostBar/>
         </Grid>
         
